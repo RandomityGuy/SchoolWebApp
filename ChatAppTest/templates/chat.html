@@ -1,0 +1,152 @@
+<html>
+<style>
+    {% include "style.css" %}
+</style>
+<style>
+    {% include "dark-theme.css" %}
+</style>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+
+        var lastmessageid = "{{ Model.lastmessageid }}";
+        var channelid = "{{ Model.channelid }}";
+
+        $(function () {
+
+            function addChatMessage(id, author,authorid, content,avatar) {
+                txt = `<div class="chatlog__message-group">
+            <div class="chatlog__author-avatar-container">
+                <img class="chatlog__author-avatar" src="${ avatar }" />
+            </div>
+            <div class="chatlog__messages">
+
+                <span class="chatlog__author-name" title="${ author }" data-user-id="${ authorid }">${ author }</span>
+
+                <span class="chatlog__timestamp">${ id }</span>
+
+                
+                <div class="chatlog__message" data-message-id="${ id }" id="message-${ id }">
+                    
+                    <div class="chatlog__content">
+                        <span class="markdown">${ content }</span>
+                    </div>                   
+                </div>                
+            </div>
+        </div>`
+
+                $("#chatlog").append(txt);
+
+            }
+
+            (function poll() {
+                setTimeout(function() {
+                    $.ajax({
+                        url: `/api/channels/${channelid}/getChatMessages?after=${lastmessageid}`,
+                        type: "GET",
+                        success: function (data) {
+                            if (data.lastmessageid == -1)
+                                return;
+                            lastmessageid = data.lastmessageid.toString();
+                            msgs = data.messages;
+                            
+                            for (i = 0; i < msgs.length; i++) {
+                                messageid = msgs[i].id;
+                                authorid = msgs[i].author.id;
+                                authorname = msgs[i].author.name;
+                                avatarurl = msgs[i].author.avatarurl;
+                                msgcontent = msgs[i].messages[0].content;
+
+                                addChatMessage(messageid, authorname, authorid, msgcontent,avatarurl);
+                            }
+
+                            $('#chatlog').scrollTop($('#chatlog')[0].scrollHeight);
+                            $('#messagesubmission')[0].reset();
+
+
+                        },
+                        dataType: "json",
+                        complete: poll,
+                        timeout: 2000
+                    })
+                }, 5000);
+            })();
+
+            $("#messagesubmission").submit(function (e) {
+                e.preventDefault();
+                if ($.trim($("#sendmsg").val()) === "") {
+                    return false;
+                }
+                var form = $(this);
+                var url = form.attr('action');
+
+
+                $.ajax({
+                     type: "POST",
+                     url: `../../../api/channels/${channelid}/sendChatMessage`,
+                    data: form.serialize(), // serializes the form's elements.
+                    error: function(response)
+                    {
+                        //addChatMessage(response.id, response.authorname, response.authorid, response.content,"");
+                        $('#chatlog').scrollTop($('#chatlog')[0].scrollHeight);
+                       $('#messagesubmission')[0].reset();
+                    },
+                    success: function (response) {
+                        //addChatMessage(response.id, response.authorname, response.authorid, response.content,"");
+                        $('#chatlog').scrollTop($('#chatlog')[0].scrollHeight);
+                        $('#messagesubmission')[0].reset();
+                    }
+                });
+
+            });
+
+            $("input").keypress(function(event) {
+              if (event.which == 13) {
+                  event.preventDefault();
+                  $("#messagesubmission").submit();
+                 }
+            });
+
+        })
+
+    </script>
+    <div class="channelList">
+        <ul>
+            {% for channel in Channels.channels %}
+            <li data-channel-id="{{channel.id}}"><a href="/channels/{{channel.id}}/chat">{{ channel.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="chatlog" id="chatlog">
+        {% for group in Model.messages %}
+
+        <div class="chatlog__message-group">
+            <div class="chatlog__author-avatar-container">
+                <img class="chatlog__author-avatar" src="{{ group.author.avatarUrl }}" />
+            </div>
+            <div class="chatlog__messages">
+
+                <span class="chatlog__author-name" title="{{ group.author.name }}" data-user-id="{{ group.author.id }}">{{ group.author.name }}</span>
+
+                <span class="chatlog__timestamp">{{ group.id }}</span>
+
+                {% for message in group.messages %}
+                <div class="chatlog__message" data-message-id="{{ message.id }}" id="message-{{ message.id }}">
+                    {% if message.content is defined %}
+                    <div class="chatlog__content">
+                        <span class="markdown">{{ message.content }}</span>
+                    </div>
+                    {% endif %}
+
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <form id="messagesubmission" action="{{url_for('sendChatMessage',channel=Model.channelid)}}" method="post">
+        <input type="text" id="sendmsg" name="messagebox" value="" class="MessageBox" />
+        <input type="hidden" name="userid" value={{userid}} />
+    </form>
+</body>
+</html>

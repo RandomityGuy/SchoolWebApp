@@ -25,13 +25,13 @@
 
                 <span class="chatlog__timestamp">${ id }</span>
 
-                
+
                 <div class="chatlog__message" data-message-id="${ id }" id="message-${ id }">
-                    
+
                     <div class="chatlog__content">
                         <span class="markdown">${ content }</span>
-                    </div>                   
-                </div>                
+                    </div>
+                </div>
             </div>
         </div>`
 
@@ -42,14 +42,14 @@
             (function poll() {
                 setTimeout(function() {
                     $.ajax({
-                        url: `/api/channels/${channelid}/getChatMessages?after=${lastmessageid}`,
+                        url: `/api/channels/${channelid}/messages?after=${lastmessageid}`,
                         type: "GET",
                         success: function (data) {
                             if (data.lastmessageid == -1)
                                 return;
                             lastmessageid = data.lastmessageid.toString();
                             msgs = data.messages;
-                            
+
                             for (i = 0; i < msgs.length; i++) {
                                 messageid = msgs[i].id;
                                 authorid = msgs[i].author.id;
@@ -83,7 +83,7 @@
 
                 $.ajax({
                      type: "POST",
-                     url: `../../../api/channels/${channelid}/sendChatMessage`,
+                     url: `../../../api/channels/${channelid}/messages`,
                     data: form.serialize(), // serializes the form's elements.
                     error: function(response)
                     {
@@ -117,6 +117,18 @@
             {% endfor %}
         </ul>
     </div>
+
+    <div class="userList">
+        <div class="chatlog__messages">
+            {% for user in Users.users %}
+            <div class="user__author-avatar-container">
+                <img class="chatlog__author-avatar" src="" />
+                <span class="chatlog__author-name" title="{{ user.name }}" data-user-id="{{ user.id }}">{{ user.name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
     <div class="chatlog" id="chatlog">
         {% for group in Model.messages %}
 
@@ -144,6 +156,9 @@
         </div>
         {% endfor %}
     </div>
+
+
+
     <form id="messagesubmission" action="{{url_for('sendChatMessage',channel=Model.channelid)}}" method="post">
         <input type="text" id="sendmsg" name="messagebox" value="" class="MessageBox" />
         <input type="hidden" name="userid" value={{userid}} />

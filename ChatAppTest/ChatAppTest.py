@@ -15,7 +15,7 @@ def getChannels():
 	userid = int(request.cookies.get('loginid'));
 	return jsonify(ChannelModel(api.Channel.getChannelList(userid)).toDict());
 
-@app.route("/api/channels/<channel>/getChatMessages",methods = ['GET'])
+@app.route("/api/channels/<channel>/messages",methods = ['GET'])
 def getChatMessages(channel):
 	msgcount = int(request.args.get('messages',50));
 	fromtimestamp = int(request.args.get('after',0));
@@ -28,8 +28,16 @@ def getChatMessages(channel):
 	jdict = api.ChatModel(chatmsgs,lastmsgid,channel).toDict();
 	return jsonify(jdict);
 
+@app.route("/api/channels/<channel>/users",methods = ['GET'])
+def getUserList(channel):
+	users = api.Channel.getUserList(channel);
+	jlist = [];
+	for user in users:
+		jlist.append(user.toDict());
+	return jsonify(jlist);
+
 	
-@app.route("/api/channels/<channel>/sendChatMessage",methods = ['POST'])
+@app.route("/api/channels/<channel>/messages",methods = ['POST'])
 def sendChatMessage(channel):
 	msg = request.form["messagebox"];
 	userid = request.cookies.get('loginid');
@@ -64,8 +72,9 @@ def chat(channel):
 	chatmsgs = api.Channel.getChatMessages(channel,50,0);
 	lastid = chatmsgs[-1].id if (len(chatmsgs)!=0) else 0;
 	channelmodel = api.Channel.getChannelList(loginperson);
+	usermodel = api.Channel.getUserList(channelmodel[0].id);
 
-	return make_response(render_template("chat.html",Model = api.ChatModel(chatmsgs,lastid,channel),userid=loginperson,Channels = api.ChannelModel(channelmodel)));
+	return make_response(render_template("chat.html",Model = api.ChatModel(chatmsgs,lastid,channel),userid=loginperson,Channels = api.ChannelModel(channelmodel),Users = api.UserModel(usermodel)));
 
 @app.route("/api/authorize",methods = ['POST'])
 def auth():

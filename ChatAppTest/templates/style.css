@@ -173,6 +173,14 @@ img {
     overflow-y:scroll;
 }
 
+.userList {
+    width: 200px;
+    float: right;
+    margin-bottom: 24px;
+    height: 99vh;
+    overflow-y: scroll;
+}
+
 .channelList ul li {
     list-style: none;
     margin-left: -10px;
@@ -196,6 +204,11 @@ img {
 .chatlog__author-avatar-container {
     flex: 0;
     width: 40px;
+    height: 40px;
+}
+
+.user__author-avatar-container {
+    flex: 0;
     height: 40px;
 }
 

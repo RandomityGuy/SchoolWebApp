@@ -87,6 +87,15 @@ class Channel(ToDictable):
 		return retlist;
 
 	@staticmethod
+	def getUserList(channelid):
+		query = f"select chatusers.id,username from channelmembers,chatusers where (channelid = {channelid} && userid = chatusers.id);";
+		cursor.execute(query);
+		retlist = [];
+		for (id,name) in cursor:
+			retlist.append(ChatAuthor(id,name,""));
+		return retlist;
+
+	@staticmethod
 	def sendMessage(channel,userid,msg):
 		id = snowflakegen.__next__();
 		canAccessThisChannel = api.Channel.validateAccess(channel,userid);
@@ -111,7 +120,17 @@ class Channel(ToDictable):
 
 		return retlist;
 
+class UserModel(ToDictable):
+	def __init__(self,users):
+		self.users = users;
 
+	def toDict(self):
+		d = {};
+		L = [];
+		for m in self.channels:
+			L.append(m.toDict());
+		d["users"] = L;
+		return d;
 
 class ChannelModel(ToDictable):
 	def __init__(self,channels):

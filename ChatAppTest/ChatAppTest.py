@@ -76,6 +76,10 @@ def chat(channel):
 
 	return make_response(render_template("chat.html",Model = api.ChatModel(chatmsgs,lastid,channel),userid=loginperson,Channels = api.ChannelModel(channelmodel),Users = api.UserModel(usermodel)));
 
+@app.route("/users/<user>/chat",methods = ['GET'])
+def userDM(user):
+	userid = int(request.cookies.get('loginid'));
+
 @app.route("/api/authorize",methods = ['POST'])
 def auth():
 	loginperson = request.form["loginid"];

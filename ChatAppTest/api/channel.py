@@ -49,12 +49,13 @@ class ChatAuthor(ToDictable):
 		return {"id" : self.id, "name": self.name, "avatarurl" : self.avatarurl };
 
 class Channel(ToDictable):
-	def __init__(self,id,name):
+	def __init__(self,id,name,flags):
 		self.id = id;
 		self.name = name;
+		self.flags = flags;
 
 	def toDict(self):
-		return {"id":self.id,"name":self.name};
+		return {"id":self.id,"name":self.name,"flags":self.flags};
 
 	@staticmethod
 	def validateAccess(channel,userid):
@@ -69,21 +70,48 @@ class Channel(ToDictable):
 		return False;
 
 	@staticmethod
-	def createChannel(channelname,members):
+	def createChannel(channelname,members,flags):
 		channelid = snowflakegen.__next__();
-		query = f"INSERT INTO channels VALUES({channelid},\"{channelname}\");";
+		query = f"INSERT INTO channels VALUES({channelid},\"{channelname}\",{flags});";
 		cursor.execute(query);
 		for member in members:
-			cursor.execute(f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channeld},{member});");
+			cursor.execute(f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channelid},{member});");
 		db.commit();
 
 	@staticmethod
+	def channelExists(channelid):
+		query = f"SELECT id from channels WHERE id = {channelid};";
+		cursor.execute(query);
+		if (len(cursor) != 0):
+			return True;
+		return False;
+
+	@staticmethod
+	def DMExists(userone,usertwo):
+		//TODO: Figure this out
+		query = f"select * from channels JOIN (select * from channelmembers group by channelId having count(*) = 2) as X where channels.id = X.channelId;";
+
+	@staticmethod
+	def joinChannelIfExists(channelid,userid):
+		if (channelExists(channelid)):
+			query = f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channelid},{userid});";
+			cursor.execute(query);
+			db.commit();
+
+	@staticmethod
+	def leaveChannel(channelid,userid):
+		if (channelExists(channelid)):
+			query = "DELETE FROM channelmembers WHERE (channelId={channelid} && userid={userid});";
+			cursor.execute(query);
+			db.commit();
+
+	@staticmethod
 	def getChannelList(userid):
-		query = f"select channelId,name from channelmembers,channels where (channelmembers.channelid = channels.id && userid = {userid});";
+		query = f"select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = {userid});";
 		cursor.execute(query);
 		retlist = [];
 		for (id,name) in cursor:
-			retlist.append(Channel(id,name));
+			retlist.append(Channel(id,name,flags));
 		return retlist;
 
 	@staticmethod

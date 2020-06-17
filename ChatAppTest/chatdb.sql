@@ -36,7 +36,7 @@ CREATE TABLE `channelmembers` (
 
 LOCK TABLES `channelmembers` WRITE;
 /*!40000 ALTER TABLE `channelmembers` DISABLE KEYS */;
-INSERT INTO `channelmembers` VALUES (1,1,1),(2,1,2),(3,2,1),(4,2,2),(5,3,1);
+INSERT INTO `channelmembers` VALUES (1,1,1),(2,1,2),(3,2,1),(4,2,2),(5,3,1),(6,4,1),(7,4,2),(8,5,1),(9,5,3);
 /*!40000 ALTER TABLE `channelmembers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -61,7 +61,7 @@ CREATE TABLE `channels` (
 
 LOCK TABLES `channels` WRITE;
 /*!40000 ALTER TABLE `channels` DISABLE KEYS */;
-INSERT INTO `channels` VALUES (1,'general',0),(2,'test-channel',0),(3,'third-channel',0);
+INSERT INTO `channels` VALUES (1,'general',0),(2,'test-channel',0),(3,'third-channel',0),(4,'DM_A_B',1),(5,'DM_P_Q',1);
 /*!40000 ALTER TABLE `channels` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -100,7 +100,9 @@ DROP TABLE IF EXISTS `chatusers`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chatusers` (
   `Id` bigint NOT NULL,
-  `Username` varchar(25) NOT NULL,
+  `Username` varchar(256) DEFAULT NULL,
+  `password` varchar(256) DEFAULT NULL,
+  `permissions` smallint DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -111,8 +113,32 @@ CREATE TABLE `chatusers` (
 
 LOCK TABLES `chatusers` WRITE;
 /*!40000 ALTER TABLE `chatusers` DISABLE KEYS */;
-INSERT INTO `chatusers` VALUES (1,'Krishiv'),(2,'TestUser');
+INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL),(2,'TestUser',NULL,NULL);
 /*!40000 ALTER TABLE `chatusers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tokens`
+--
+
+DROP TABLE IF EXISTS `tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tokens` (
+  `id` bigint DEFAULT NULL,
+  `token` varchar(256) DEFAULT NULL,
+  `expires` date DEFAULT NULL,
+  `user` bigint DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tokens`
+--
+
+LOCK TABLES `tokens` WRITE;
+/*!40000 ALTER TABLE `tokens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -124,4 +150,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-05-31 18:21:10
+-- Dump completed on 2020-06-17 15:10:57

@@ -59,6 +59,14 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def validateAccess(channel,userid):
+		'''
+		TODO: implement permissions flags
+		Validate access for a user for given channel
+
+		@param channel: the channel id
+		@param userid: the user id
+		@returns: True if success
+		'''
 		print(cursor);
 		print(db);
 		query = f"select id from channelmembers where channelId = {channel} && userid = {userid};";
@@ -71,6 +79,14 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def createChannel(channelname,members,flags):
+		'''
+		Create a channel from given name and specified memmbers and flags
+
+		@param channelname: the channel name
+		@param members: list of user ids to put in the channel
+		@param flags: the flags for a channel
+		'''
+
 		channelid = snowflakegen.__next__();
 		query = f"INSERT INTO channels VALUES({channelid},\"{channelname}\",{flags});";
 		cursor.execute(query);
@@ -80,6 +96,12 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def channelExists(channelid):
+		'''
+		Check if a given channel exists
+
+		@param channelid: the channel id to test
+		@returns: True if channel exists
+		'''
 		query = f"SELECT id from channels WHERE id = {channelid};";
 		cursor.execute(query);
 		if (len(cursor) != 0):
@@ -88,11 +110,18 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def DMExists(userone,usertwo):
-		//TODO: Figure this out
+		# TODO: Figure this out
 		query = f"select * from channels JOIN (select * from channelmembers group by channelId having count(*) = 2) as X where channels.id = X.channelId;";
 
 	@staticmethod
 	def joinChannelIfExists(channelid,userid):
+		'''
+		Insert user into a channel if the channel exists
+
+		@param channelid: the channel id
+		@param userid: the user id
+		'''
+
 		if (channelExists(channelid)):
 			query = f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channelid},{userid});";
 			cursor.execute(query);
@@ -100,6 +129,12 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def leaveChannel(channelid,userid):
+		'''
+		Remove user from specified channel
+
+		@param channelid: the channelid
+		@param userid: the user id
+		'''
 		if (channelExists(channelid)):
 			query = "DELETE FROM channelmembers WHERE (channelId={channelid} && userid={userid});";
 			cursor.execute(query);
@@ -107,6 +142,13 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def getChannelList(userid):
+		'''
+		TODO: ADD PERMISSIONS OVERRIDES
+		Gets the channel list for a specified user
+
+		@param userid: the user id
+		@returns: list of Channel objects
+		'''
 		query = f"select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = {userid});";
 		cursor.execute(query);
 		retlist = [];
@@ -116,6 +158,12 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def getUserList(channelid):
+		'''
+		Get list of users in a channel
+
+		@param channelid: the channel id
+		@returns: list of ChatAuthor objects
+		'''
 		query = f"select chatusers.id,username from channelmembers,chatusers where (channelid = {channelid} && userid = chatusers.id);";
 		cursor.execute(query);
 		retlist = [];
@@ -125,6 +173,14 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def sendMessage(channel,userid,msg):
+		'''
+		Sends a message to channel as user
+
+		@param channel: the channel id
+		@param userid: the user id
+		@param msg: the message
+		@returns: if the message was successfully sent
+		'''
 		id = snowflakegen.__next__();
 		canAccessThisChannel = api.Channel.validateAccess(channel,userid);
 		if (not canAccessThisChannel):
@@ -137,6 +193,15 @@ class Channel(ToDictable):
 
 	@staticmethod
 	def getChatMessages(channel,lim = 100,after = 0):
+		'''
+		Gets list of chat messages in given channel
+
+		@param channel: the channel id
+		@param lim: (optional) maximum messages to retrieve
+		@param after: (optional) the timestamp after which the messages have to be retrieved
+		@returns: list of ChatMessageGroup objects
+		'''
+
 		if (lim > 100):
 			lim = 100;
 		query = f"SELECT ChatMessages.Id,ChatUsers.Id,Username,Content FROM ChatMessages,ChatUsers WHERE (ChatMessages.User = ChatUsers.Id && ChatMessages.Id > {after} && ChatMessages.Channel = {channel} ) ORDER BY ChatMessages.Id ASC LIMIT {lim};";

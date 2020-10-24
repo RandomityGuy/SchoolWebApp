@@ -16,6 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `announcements`
+--
+
+DROP TABLE IF EXISTS `announcements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `announcements` (
+  `id` bigint NOT NULL,
+  `byuser` bigint DEFAULT NULL,
+  `class` varchar(32) DEFAULT NULL,
+  `content` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `announcements`
+--
+
+LOCK TABLES `announcements` WRITE;
+/*!40000 ALTER TABLE `announcements` DISABLE KEYS */;
+INSERT INTO `announcements` VALUES (1,1,'XII-A','test');
+/*!40000 ALTER TABLE `announcements` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `channelmembers`
 --
 
@@ -103,6 +129,7 @@ CREATE TABLE `chatusers` (
   `Username` varchar(256) DEFAULT NULL,
   `password` varchar(256) DEFAULT NULL,
   `permissions` smallint DEFAULT NULL,
+  `class` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -113,7 +140,7 @@ CREATE TABLE `chatusers` (
 
 LOCK TABLES `chatusers` WRITE;
 /*!40000 ALTER TABLE `chatusers` DISABLE KEYS */;
-INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL),(2,'TestUser',NULL,NULL);
+INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL,'XII-A'),(2,'TestUser',NULL,NULL,'XII-A');
 /*!40000 ALTER TABLE `chatusers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -138,6 +165,7 @@ CREATE TABLE `tokens` (
 
 LOCK TABLES `tokens` WRITE;
 /*!40000 ALTER TABLE `tokens` DISABLE KEYS */;
+INSERT INTO `tokens` VALUES (1,'abc','2020-12-24',1);
 /*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -150,4 +178,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-17 15:10:57
+-- Dump completed on 2020-10-24 11:36:16

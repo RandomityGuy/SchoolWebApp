@@ -92,6 +92,37 @@ def auth():
 	redir.set_cookie('loginid',loginperson);
 	return redir;
 
+@app.route("/api/announcements/",methods = ['GET','POST'])
+def announcements(user):
+	if (request.method == 'GET'):
+		userid = request.cookies.get('loginid');
+		anns = api.Announcements.get_announcements_by_user(userid);
+		L = [];
+		for a in anns:
+			L.append(a.ToDict());
+
+		return jsonify(L);
+
+	if (request.method == 'POST'):
+		token = request.form.get('token');
+		toclass = request.form.get('class');
+		content = request.form.get('content');
+
+		if (not api.Auth.authorize(token)):
+			return abort(403);
+
+		perms = api.Auth.get_token_permissions(token);
+		if (api.Permissions.has_permission(perms,api.Permissions.MANAGE_ANNOUNCE)):
+			user = api.Auth.get_token_user(token);
+			if (user != None):
+				api.Announcements.make_announcement(user,toclass,content);
+				return "OK";
+			else:
+				return abort(403);
+		return abort(403);
+
+
+
 @app.route("/")
 def login():
 	return render_template("login.html");

@@ -31,7 +31,7 @@ class Auth:
 			raise Exception("No password set");
 
 		if (bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd).digest()),data[2])):
-			cursor.execute(f"SELECT token FROM tokens WHERE (expires > GETDATE() && user=={data[0]});");
+			cursor.execute(f"SELECT token FROM tokens WHERE (expires > GETDATE() && user={data[0]});");
 			if (len(cursor) == 0):
 				# Create new token
 				token = secrets.token_hex(128);
@@ -72,7 +72,34 @@ class Auth:
 		@param token: token
 		@return: True if success
 		'''
-		cursor.execute(f"SELECT token FROM tokens WHERE (expires > GETDATE() && token=={token});");
+		cursor.execute(f"SELECT token FROM tokens WHERE (expires > GETDATE() && token={token});");
 		if (len(cursor) == 0):
 			return False;
 		return True;
+
+	@staticmethod
+	def get_token_permissions(token):
+		res = cursor.execute(f"SELECT permissions FROM tokens,chatusers WHERE tokens.user = chatusers.id && token = {token};");
+		if (len(res) == 0):
+			return None;
+		perms = res.fetchone();
+		return perms;
+
+	@staticmethod
+	def get_permissions(userid):
+		res = cursor.execute(f"SELECT permissions FROM chatusers WHERE id = {userid};");
+		if (len(res) == 0):
+			return None;
+		perms = res.fetchone();
+		return perms;
+
+
+	@staticmethod
+	def get_token_user(token):
+		if (Auth.authorize(token)):
+			query = "SELECT chatuser.id FROM tokens,chatusers WHERE tokens.user=chatuser.id;";
+			res = cursor.execute(query);
+			if (len(res) == 0):
+				return None;
+			return res.fetchone();
+		return None;

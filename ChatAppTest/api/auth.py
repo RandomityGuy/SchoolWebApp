@@ -20,9 +20,9 @@ class Auth:
 
 		# !!! WARNING : SEND A HASHED PASSWORD FROM THE SITE, HASH THE PASSWORD WITHIN THE BROWSER AND THEN SEND IT HERE
 
-		cursor.execute(f"SELECT id,Username,password FROM chatusers WHERE Username = {username};");
+		cursor.execute("SELECT id,Username,password FROM chatusers WHERE Username = %s;",username);
 
-		if (len(cursor) == 0):
+		if (cursor.rowcount == 0):
 			raise Exception("Invalid username");
 
 		data = cursor.fetchone();
@@ -31,12 +31,12 @@ class Auth:
 			raise Exception("No password set");
 
 		if (bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd).digest()),data[2])):
-			cursor.execute(f"SELECT token FROM tokens WHERE (expires > GETDATE() && user={data[0]});");
-			if (len(cursor) == 0):
+			cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && user=%s);",data[0]);
+			if (cursor.rowcount == 0):
 				# Create new token
 				token = secrets.token_hex(128);
 				id = snowflakegen.__next__();
-				cursor.execute(f"INSERT INTO tokens VALUES({id},\"{token}\",DATEADD(m,1,GETDATE()),{data[1]});");
+				cursor.execute("INSERT INTO tokens VALUES(%s,%s,DATEADD(m,1,CURDATE()),%s);",(id,token,data[1]));
 				db.commit();
 				return token;
 			else:
@@ -59,7 +59,7 @@ class Auth:
 		id = snowflakegen.__next__();
 		hash = bcrypt.hashpw(base64.b64encode(hashlib.sha256(pwd).digest()),bcrypt.gensalt());
 
-		cursor.execute(f"INSERT INTO chatdb VALUES({id},\"{username}\",\"{hash}\",{permissions});");
+		cursor.execute("INSERT INTO chatdb VALUES(%s,%s,%s,%s);",(id,username,hash,permissions));
 		db.commit();
 
 		return Auth.login(username,pwd);
@@ -72,23 +72,23 @@ class Auth:
 		@param token: token
 		@return: True if success
 		'''
-		cursor.execute(f"SELECT token FROM tokens WHERE (expires > GETDATE() && token={token});");
-		if (len(cursor) == 0):
+		cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && token=%s);",(token,));
+		if (cursor.rowcount == 0):
 			return False;
 		return True;
 
 	@staticmethod
 	def get_token_permissions(token):
-		res = cursor.execute(f"SELECT permissions FROM tokens,chatusers WHERE tokens.user = chatusers.id && token = {token};");
-		if (len(res) == 0):
+		res = cursor.execute("SELECT permissions FROM tokens,chatusers WHERE (tokens.user = chatusers.id && token = %s);",(token,));
+		if (cursor.rowcount == 0):
 			return None;
 		perms = res.fetchone();
 		return perms;
 
 	@staticmethod
 	def get_permissions(userid):
-		res = cursor.execute(f"SELECT permissions FROM chatusers WHERE id = {userid};");
-		if (len(res) == 0):
+		res = cursor.execute("SELECT permissions FROM chatusers WHERE id = %s;",userid);
+		if (cursor.rowcount == 0):
 			return None;
 		perms = res.fetchone();
 		return perms;
@@ -97,9 +97,9 @@ class Auth:
 	@staticmethod
 	def get_token_user_id(token):
 		if (Auth.authorize(token)):
-			query = "SELECT chatuser.id FROM tokens,chatusers WHERE tokens.user=chatuser.id;";
-			res = cursor.execute(query);
-			if (len(res) == 0):
+			query = "SELECT chatusers.id FROM tokens,chatusers WHERE tokens.user=chatusers.id;";
+			cursor.execute(query);
+			if (cursor.rowcount == 0):
 				return None;
-			return res.fetchone();
+			return cursor.fetchone();
 		return None;

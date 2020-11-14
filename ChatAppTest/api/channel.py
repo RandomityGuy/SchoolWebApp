@@ -58,7 +58,7 @@ class Channel(ToDictable):
 		return {"id":self.id,"name":self.name,"flags":self.flags};
 
 	@staticmethod
-	def validateAccess(channel,userid):
+	def validate_access(channel,userid):
 		'''
 		TODO: implement permissions flags
 		Validate access for a user for given channel
@@ -78,7 +78,7 @@ class Channel(ToDictable):
 		return False;
 
 	@staticmethod
-	def createChannel(channelname,members,flags):
+	def create_channel(channelname,members,flags):
 		'''
 		Create a channel from given name and specified memmbers and flags
 
@@ -95,7 +95,7 @@ class Channel(ToDictable):
 		db.commit();
 
 	@staticmethod
-	def channelExists(channelid):
+	def channel_exists(channelid):
 		'''
 		Check if a given channel exists
 
@@ -109,12 +109,12 @@ class Channel(ToDictable):
 		return False;
 
 	@staticmethod
-	def DMExists(userone,usertwo):
+	def DM_exists(userone,usertwo):
 		# TODO: Figure this out
 		query = f"select * from channels JOIN (select * from channelmembers group by channelId having count(*) = 2) as X where channels.id = X.channelId;";
 
 	@staticmethod
-	def joinChannelIfExists(channelid,userid):
+	def join_channel_if_exists(channelid,userid):
 		'''
 		Insert user into a channel if the channel exists
 
@@ -122,26 +122,26 @@ class Channel(ToDictable):
 		@param userid: the user id
 		'''
 
-		if (channelExists(channelid)):
+		if (Channel.channel_exists(channelid)):
 			query = f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channelid},{userid});";
 			cursor.execute(query);
 			db.commit();
 
 	@staticmethod
-	def leaveChannel(channelid,userid):
+	def leave_channel(channelid,userid):
 		'''
 		Remove user from specified channel
 
 		@param channelid: the channelid
 		@param userid: the user id
 		'''
-		if (channelExists(channelid)):
+		if (Channel.channel_exists(channelid)):
 			query = "DELETE FROM channelmembers WHERE (channelId={channelid} && userid={userid});";
 			cursor.execute(query);
 			db.commit();
 
 	@staticmethod
-	def getChannelList(userid):
+	def get_channel_list(userid):
 		'''
 		TODO: ADD PERMISSIONS OVERRIDES
 		Gets the channel list for a specified user
@@ -152,12 +152,12 @@ class Channel(ToDictable):
 		query = f"select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = {userid});";
 		cursor.execute(query);
 		retlist = [];
-		for (id,name) in cursor:
+		for (id,name,flags) in cursor:
 			retlist.append(Channel(id,name,flags));
 		return retlist;
 
 	@staticmethod
-	def getUserList(channelid):
+	def get_user_list(channelid):
 		'''
 		Get list of users in a channel
 
@@ -172,7 +172,7 @@ class Channel(ToDictable):
 		return retlist;
 
 	@staticmethod
-	def sendMessage(channel,userid,msg):
+	def send_message(channel,userid,msg):
 		'''
 		Sends a message to channel as user
 
@@ -182,7 +182,7 @@ class Channel(ToDictable):
 		@returns: if the message was successfully sent
 		'''
 		id = snowflakegen.__next__();
-		canAccessThisChannel = api.Channel.validateAccess(channel,userid);
+		canAccessThisChannel = Channel.validate_access(channel,userid);
 		if (not canAccessThisChannel):
 			return False;
 		query = f"INSERT INTO ChatMessages VALUES({id},{userid},\"{msg}\",{channel});";
@@ -192,7 +192,7 @@ class Channel(ToDictable):
 		return True;
 
 	@staticmethod
-	def getChatMessages(channel,lim = 100,after = 0):
+	def get_chat_messages(channel,lim = 100,after = 0):
 		'''
 		Gets list of chat messages in given channel
 

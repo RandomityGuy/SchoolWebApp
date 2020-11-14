@@ -62,7 +62,7 @@ class Auth:
 		cursor.execute(f"INSERT INTO chatdb VALUES({id},\"{username}\",\"{hash}\",{permissions});");
 		db.commit();
 
-		return login(username,pwd);
+		return Auth.login(username,pwd);
 
 	@staticmethod
 	def authorize(token):
@@ -95,7 +95,7 @@ class Auth:
 
 
 	@staticmethod
-	def get_token_user(token):
+	def get_token_user_id(token):
 		if (Auth.authorize(token)):
 			query = "SELECT chatuser.id FROM tokens,chatusers WHERE tokens.user=chatuser.id;";
 			res = cursor.execute(query);

@@ -108,7 +108,7 @@ def auth():
 		abort(403);
 
 @app.route("/api/announcements/",methods = ['GET','POST'])
-def announcements(user):
+def announcements():
 	if (request.method == 'GET'):
 		userid = authenticate_user();
 		anns = api.Announcements.get_announcements_by_user(userid);

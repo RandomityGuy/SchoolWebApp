@@ -67,10 +67,7 @@ class Channel(ToDictable):
 		@param userid: the user id
 		@returns: True if success
 		'''
-		print(cursor);
-		print(db);
-		query = f"select id from channelmembers where channelId = {channel} && userid = {userid};";
-		cursor.execute(query);
+		cursor.execute("select id from channelmembers where channelId = %s && userid = %s;",(channel,userid));
 
 		for (id) in cursor:
 			return True;
@@ -88,10 +85,9 @@ class Channel(ToDictable):
 		'''
 
 		channelid = snowflakegen.__next__();
-		query = f"INSERT INTO channels VALUES({channelid},\"{channelname}\",{flags});";
-		cursor.execute(query);
+		cursor.execute("INSERT INTO channels VALUES(%s,%s,%s);",(channelid,channelname,flags));
 		for member in members:
-			cursor.execute(f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channelid},{member});");
+			cursor.execute("INSERT INTO channelmembers VALUES(%s,%s,%s);",(snowflakegen.__next__(),channelid,member));
 		db.commit();
 
 	@staticmethod
@@ -102,8 +98,7 @@ class Channel(ToDictable):
 		@param channelid: the channel id to test
 		@returns: True if channel exists
 		'''
-		query = f"SELECT id from channels WHERE id = {channelid};";
-		cursor.execute(query);
+		cursor.execute("SELECT id from channels WHERE id = %s;",channelid);
 		if (len(cursor) != 0):
 			return True;
 		return False;
@@ -123,8 +118,7 @@ class Channel(ToDictable):
 		'''
 
 		if (Channel.channel_exists(channelid)):
-			query = f"INSERT INTO channelmembers VALUES({snowflakegen.__next__()},{channelid},{userid});";
-			cursor.execute(query);
+			cursor.execute("INSERT INTO channelmembers VALUES(%s,%s,%s);",(snowflakegen.__next__(),channelid,userid));
 			db.commit();
 
 	@staticmethod
@@ -136,8 +130,7 @@ class Channel(ToDictable):
 		@param userid: the user id
 		'''
 		if (Channel.channel_exists(channelid)):
-			query = "DELETE FROM channelmembers WHERE (channelId={channelid} && userid={userid});";
-			cursor.execute(query);
+			cursor.execute("DELETE FROM channelmembers WHERE (channelId=%s && userid=%s);",(channelid,userid));
 			db.commit();
 
 	@staticmethod
@@ -149,8 +142,7 @@ class Channel(ToDictable):
 		@param userid: the user id
 		@returns: list of Channel objects
 		'''
-		query = f"select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = {userid});";
-		cursor.execute(query);
+		cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);",userid);
 		retlist = [];
 		for (id,name,flags) in cursor:
 			retlist.append(Channel(id,name,flags));
@@ -164,8 +156,7 @@ class Channel(ToDictable):
 		@param channelid: the channel id
 		@returns: list of ChatAuthor objects
 		'''
-		query = f"select chatusers.id,username from channelmembers,chatusers where (channelid = {channelid} && userid = chatusers.id);";
-		cursor.execute(query);
+		cursor.execute("SELECT chatusers.id, username FROM channelmembers,chatusers WHERE (channelmembers.channelId = %s && channelmembers.userid = chatusers.id);",(channelid,));
 		retlist = [];
 		for (id,name) in cursor:
 			retlist.append(ChatAuthor(id,name,""));
@@ -185,9 +176,7 @@ class Channel(ToDictable):
 		canAccessThisChannel = Channel.validate_access(channel,userid);
 		if (not canAccessThisChannel):
 			return False;
-		query = f"INSERT INTO ChatMessages VALUES({id},{userid},\"{msg}\",{channel});";
-		#cursor = db.cursor(buffered = True);
-		cursor.execute(query);
+		cursor.execute("INSERT INTO ChatMessages VALUES(%s,%s,%s,%s);",id,userid,msg,channel);
 		db.commit();
 		return True;
 
@@ -204,8 +193,7 @@ class Channel(ToDictable):
 
 		if (lim > 100):
 			lim = 100;
-		query = f"SELECT ChatMessages.Id,ChatUsers.Id,Username,Content FROM ChatMessages,ChatUsers WHERE (ChatMessages.User = ChatUsers.Id && ChatMessages.Id > {after} && ChatMessages.Channel = {channel} ) ORDER BY ChatMessages.Id ASC LIMIT {lim};";
-		cursor.execute(query);
+		cursor.execute("SELECT ChatMessages.Id,ChatUsers.Id,Username,Content FROM ChatMessages,ChatUsers WHERE (ChatMessages.User = ChatUsers.Id && ChatMessages.Id > %s && ChatMessages.Channel = %s ) ORDER BY ChatMessages.Id ASC LIMIT %s;",(after,channel,lim));
 		retlist = [];
 		for (id,userid,username,content) in cursor:
 			retlist.append(ChatMessageGroup(id,ChatAuthor(userid,username,""),[ChatMessage(id,content)]));

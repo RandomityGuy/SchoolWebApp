@@ -101,5 +101,5 @@ class Auth:
 			cursor.execute(query);
 			if (cursor.rowcount == 0):
 				return None;
-			return cursor.fetchone();
+			return cursor.fetchone()[0];
 		return None;

@@ -19,8 +19,7 @@ class Announcements:
         perms = Auth.get_permissions(user);
         if (Permissions.has_permission(perms,Permissions.MANAGE_ANNOUNCE)):
             id = snowflakegen.__next__();
-            query = f"INSERT INTO announcements VALUES({id},{user},\"{destclass}\",\"{text}\");";
-            cursor.execute(query);
+            cursor.execute("INSERT INTO announcements VALUES(%s,%s,%s,%s);",(id,user,destclass,text));
             db.commit();
             return id;
         else:
@@ -31,8 +30,7 @@ class Announcements:
         perms = Auth.get_permissions(user);
         if (Permissions.has_permission(perms,Permissions.MANAGE_ANNOUNCE)):
             id = snowflakegen.__next__();
-            query = f"DELETE FROM announcements WHERE id = {announcementid};";
-            cursor.execute(query);
+            cursor.execute("DELETE FROM announcements WHERE id = %s;",(announcementid,));
             db.commit();
             return True;
         else:
@@ -40,10 +38,9 @@ class Announcements:
 
     @staticmethod
     def get_announcements_by_user(user):
-        query = f"SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = {user};";
 
-        res = cursor.execute(query);
-
+        cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;",(user,));
+        res = cursor.fetchall();
         L = [];
         for (id,byuser,clas,content) in res:
             L.append(Announcement(id,byuser,clas,content));
@@ -52,9 +49,8 @@ class Announcements:
 
     @staticmethod
     def get_announcements_by_class(userclass):
-        query = f"SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = {userclass};";
 
-        res = cursor.execute(query);
+        res = cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;",(userclass,));
 
         L = [];
         for (id,byuser,clas,content) in res:

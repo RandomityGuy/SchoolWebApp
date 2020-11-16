@@ -95,6 +95,24 @@ def chat(channel):
 def userDM(user):
 	userid = int(request.cookies.get('loginid'));
 
+@app.route("/users/<user>/avatar",methods = ['GET', 'POST'])
+def userAvatar(user):
+	if (request.method == 'GET'):
+		return api.User.get_avatar(user);
+	if (request.method == 'POST'):
+		token = authenticate_user();
+		tokenuser = api.Auth.get_token_user_id(token);
+		if (tokenuser != user):
+			perms = api.Auth.get_token_permissions(token);
+			if (api.Permissions.has_permission(perms, api.Permissions.CAN_MODIFY_AVATAR)):
+				api.User.set_avatar(user,request.data);
+			else:
+				abort(403);
+		else:
+			api.User.set_avatar(user,request.data);
+		return "OK", 200;
+	abort(403);
+
 @app.route("/api/authorize",methods = ['POST'])
 def auth():
 	username = request.json.get('username')

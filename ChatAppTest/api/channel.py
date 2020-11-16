@@ -159,7 +159,7 @@ class Channel(ToDictable):
 		cursor.execute("SELECT chatusers.id, username FROM channelmembers,chatusers WHERE (channelmembers.channelId = %s && channelmembers.userid = chatusers.id);",(channelid,));
 		retlist = [];
 		for (id,name) in cursor:
-			retlist.append(ChatAuthor(id,name,""));
+			retlist.append(ChatAuthor(id,name,f"/users/{id}/avatar"));
 		return retlist;
 
 	@staticmethod
@@ -196,7 +196,7 @@ class Channel(ToDictable):
 		cursor.execute("SELECT ChatMessages.Id,ChatUsers.Id,Username,Content FROM ChatMessages,ChatUsers WHERE (ChatMessages.User = ChatUsers.Id && ChatMessages.Id > %s && ChatMessages.Channel = %s ) ORDER BY ChatMessages.Id ASC LIMIT %s;",(after,channel,lim));
 		retlist = [];
 		for (id,userid,username,content) in cursor:
-			retlist.append(ChatMessageGroup(id,ChatAuthor(userid,username,""),[ChatMessage(id,content)]));
+			retlist.append(ChatMessageGroup(id,ChatAuthor(userid,username,f"/users/{userid}/avatar"),[ChatMessage(id,content)]));
 
 
 		return retlist;

@@ -1,9 +1,12 @@
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
+from flask.wrappers import Response
 
 import mysql.connector
 import jinja2
+from werkzeug.datastructures import Headers
 import snowflake
 import api
+import magic
 
 
 app = Flask(__name__)
@@ -41,6 +44,20 @@ def get_chat_messages(channel):
         lastmsgid = chatmsgs[-1].id
     jdict = api.ChatModel(chatmsgs, lastmsgid, channel).toDict()
     return jsonify(jdict)
+
+
+@app.route("/api/channels/<channel>", methods=["DELETE"])
+def leave_channel(channel):
+    userid = authenticate_user()
+    if request.args.get("userid", None) == None:
+        api.Channel.leave_channel(channel, userid)
+        return "OK", 200
+    else:
+        perms = api.Auth.get_permissions(userid)
+        if api.Permissions.has_permission(perms, api.Permissions.CAN_MODIFY_STUDENT):
+            api.Channel.leave_channel(channel, request.args.get("userid"))
+            return "OK", 200
+        return abort(403)
 
 
 @app.route("/api/channels/<channel>/users", methods=["GET"])
@@ -103,7 +120,10 @@ def userDM(user):
 @app.route("/users/<user>/avatar", methods=["GET", "POST"])
 def userAvatar(user):
     if request.method == "GET":
-        return api.User.get_avatar(user)
+        avatar = api.User.get_avatar(user)
+        resp = Response(avatar)
+        resp.headers["Content-Type"] = magic.from_buffer(avatar)
+        return resp
     if request.method == "POST":
         token = authenticate_user()
         tokenuser = api.Auth.get_token_user_id(token)

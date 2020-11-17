@@ -4,5 +4,5 @@ class Permissions:
     CAN_MODIFY_AVATAR = 2
 
     @staticmethod
-    def has_permission(flags,permission):
-        return (flags & permission) == permission;
+    def has_permission(flags: int, permission: int) -> bool:
+        return (flags & permission) == permission

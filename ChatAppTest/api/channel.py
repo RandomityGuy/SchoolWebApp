@@ -1,3 +1,5 @@
+from api.permissions import Permissions
+from api.auth import Auth
 from api.base import *
 
 
@@ -63,14 +65,19 @@ class Channel(ToDictable):
 
     @staticmethod
     def validate_access(channel: int, userid: int) -> bool:
-        """
-        TODO: implement permissions flags
-        Validate access for a user for given channel
+        """Validate access for the given user for the channel
 
-        @param channel: the channel id
-        @param userid: the user id
-        @returns: True if success
+        Args:
+            channel (int): The channel id
+            userid (int): The given user id
+
+        Returns:
+            bool: True if the user can access the channel
         """
+
+        if Permissions.has_permission(Auth.get_permissions(userid), Permissions.CAN_VIEW_ANY_CHANNEL):
+            return True
+
         cursor.execute("select id from channelmembers where channelId = %s && userid = %s;", (channel, userid))
 
         for id in cursor:
@@ -80,12 +87,12 @@ class Channel(ToDictable):
 
     @staticmethod
     def create_channel(channelname: str, members: list[int], flags: int):
-        """
-        Create a channel from given name and specified memmbers and flags
+        """Create a channel with given channel name and specified channel members and flags
 
-        @param channelname: the channel name
-        @param members: list of user ids to put in the channel
-        @param flags: the flags for a channel
+        Args:
+            channelname (str): The channel name
+            members (list[int]): The list of members in the channel
+            flags (int): The flags of the channel
         """
 
         channelid = snowflakegen.__next__()
@@ -96,11 +103,13 @@ class Channel(ToDictable):
 
     @staticmethod
     def channel_exists(channelid: int) -> bool:
-        """
-        Check if a given channel exists
+        """Check if a channel exists
 
-        @param channelid: the channel id to test
-        @returns: True if channel exists
+        Args:
+            channelid (int): The channel id
+
+        Returns:
+            bool: True if it exists
         """
         cursor.execute("SELECT id from channels WHERE id = %s;", channelid)
         if len(cursor) != 0:
@@ -114,11 +123,11 @@ class Channel(ToDictable):
 
     @staticmethod
     def join_channel_if_exists(channelid: int, userid: int):
-        """
-        Insert user into a channel if the channel exists
+        """For the given user, join the given channel
 
-        @param channelid: the channel id
-        @param userid: the user id
+        Args:
+            channelid (int): The channel id
+            userid (int): The user id
         """
 
         if Channel.channel_exists(channelid):
@@ -127,26 +136,30 @@ class Channel(ToDictable):
 
     @staticmethod
     def leave_channel(channelid: int, userid: int):
-        """
-        Remove user from specified channel
+        """For the given user, leave the given channel
 
-        @param channelid: the channelid
-        @param userid: the user id
+        Args:
+            channelid (int): The channel id
+            userid (int): The user id
         """
         if Channel.channel_exists(channelid):
             cursor.execute("DELETE FROM channelmembers WHERE (channelId=%s && userid=%s);", (channelid, userid))
             db.commit()
 
     @staticmethod
-    def get_channel_list(userid: int):
-        """
-        TODO: ADD PERMISSIONS OVERRIDES
-        Gets the channel list for a specified user
+    def get_channel_list(userid: int) -> list:
+        """Gets the channel list for the given user
 
-        @param userid: the user id
-        @returns: list of Channel objects
+        Args:
+            userid (int): The given user id
+
+        Returns:
+            list[Channel]: The channel list
         """
-        cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);", userid)
+        if Permissions.has_permission(Auth.get_permissions(userid), Permissions.CAN_VIEW_ANY_CHANNEL):
+            cursor.execute("SELECT channelId,name,flags FROM channelmembers,channels WHERE userid = %s;", userid)
+        else:
+            cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);", userid)
         retlist = []
         for (id, name, flags) in cursor:
             retlist.append(Channel(id, name, flags))
@@ -154,11 +167,13 @@ class Channel(ToDictable):
 
     @staticmethod
     def get_user_list(channelid: int) -> list[ChatAuthor]:
-        """
-        Get list of users in a channel
+        """Gets a list of users in the channel
 
-        @param channelid: the channel id
-        @returns: list of ChatAuthor objects
+        Args:
+            channelid (int): The channel id
+
+        Returns:
+            list[ChatAuthor]: The list of users
         """
         cursor.execute("SELECT chatusers.id, username FROM channelmembers,chatusers WHERE (channelmembers.channelId = %s && channelmembers.userid = chatusers.id);", (channelid,))
         retlist = []
@@ -168,13 +183,15 @@ class Channel(ToDictable):
 
     @staticmethod
     def send_message(channel: int, userid: int, msg: str) -> bool:
-        """
-        Sends a message to channel as user
+        """Sends a message to a given channel from the user
 
-        @param channel: the channel id
-        @param userid: the user id
-        @param msg: the message
-        @returns: if the message was successfully sent
+        Args:
+            channel (int): The channel id
+            userid (int): The user sending the message
+            msg (str): The message
+
+        Returns:
+            bool: True if success
         """
         id = snowflakegen.__next__()
         canAccessThisChannel = Channel.validate_access(channel, userid)
@@ -186,13 +203,15 @@ class Channel(ToDictable):
 
     @staticmethod
     def get_chat_messages(channel: int, lim=100, after=0) -> list[ChatMessageGroup]:
-        """
-        Gets list of chat messages in given channel
+        """Gets a list of chat messages in a channel, can be limited and be searched by id
 
-        @param channel: the channel id
-        @param lim: (optional) maximum messages to retrieve
-        @param after: (optional) the timestamp after which the messages have to be retrieved
-        @returns: list of ChatMessageGroup objects
+        Args:
+            channel (int): The channel id
+            lim (int, optional): The maximum number of messages to return. Defaults to 100.
+            after (int, optional): The snowflake id after which the messages have to be retrieved from. Defaults to 0.
+
+        Returns:
+            list[ChatMessageGroup]: The list of messages
         """
 
         if lim > 100:

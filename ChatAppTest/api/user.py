@@ -4,10 +4,13 @@ from api.base import *
 class User:
     @staticmethod
     def get_avatar(userid: int):
-        """Gets the avatar of the user by their user id
+        """Gets the avatar of the user by its id
 
-        @param userid: the user id of the user
-        @returns: the avatar binary data if success else None
+        Args:
+            userid (int): The user id
+
+        Returns:
+            str: The avatar data
         """
         cursor.execute("SELECT avatar FROM chatusers WHERE Id=%s;", (userid,))
         if cursor.rowcount == 0:
@@ -18,10 +21,11 @@ class User:
 
     @staticmethod
     def set_avatar(userid: int, avatardata):
-        """Sets the avatar of the user by their user id
+        """Sets the avatar for the user to the avatar data
 
-        @param userid: the user id of the user
-        @param avatardata: the binary data of the avatar
+        Args:
+            userid (int): The user id
+            avatardata ([type]): The avatar binary data
         """
         cursor.execute("UPDATE chatusers SET avatar = %s WHERE Id = %s;", (avatardata, userid))
         db.commit()

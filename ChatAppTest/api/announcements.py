@@ -17,6 +17,16 @@ class Announcement(ToDictable):
 class Announcements:
     @staticmethod
     def make_announcement(user: int, destclass: str, text: str) -> int:
+        """Creates an announcement for the specified class
+
+        Args:
+            user (int): The user creating the announcement
+            destclass (str): The specified class
+            text (str): The announcement contents
+
+        Returns:
+            int: The announcement id, if the announcement was successfully created
+        """
         perms = Auth.get_permissions(user)
         if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
             id = snowflakegen.__next__()
@@ -28,6 +38,15 @@ class Announcements:
 
     @staticmethod
     def revoke_announcement(user: int, announcementid: int) -> bool:
+        """Delete an announcement specified by its id
+
+        Args:
+            user (int): The user id who revokes the announcement
+            announcementid (int): The announcement id
+
+        Returns:
+            bool: True if success
+        """
         perms = Auth.get_permissions(user)
         if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
             id = snowflakegen.__next__()
@@ -39,7 +58,14 @@ class Announcements:
 
     @staticmethod
     def get_announcements_by_user(user: int) -> list[Announcement]:
+        """Gets a list of announcements for the user
 
+        Args:
+            user (int): The user id
+
+        Returns:
+            list[Announcement]: The list of announcements
+        """
         cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;", (user,))
         res = cursor.fetchall()
         L = []
@@ -50,7 +76,14 @@ class Announcements:
 
     @staticmethod
     def get_announcements_by_class(userclass: str) -> list[Announcement]:
+        """Gets a list of announcements for the class
 
+        Args:
+            userclass (str): The class
+
+        Returns:
+            list[Announcement]: The list of announcements
+        """
         res = cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;", (userclass,))
 
         L = []

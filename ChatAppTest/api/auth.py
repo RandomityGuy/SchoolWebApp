@@ -8,13 +8,19 @@ import base64
 class Auth:
     @staticmethod
     def login(username: str, pwd: str) -> str:
-        """
-        Attempt login as given username and password, returns token if success
+        """Attempt to login as a given username with the password
 
-        @param username: given username
-        @param pwd: the password
-        @return: token if success
+        Args:
+            username (str): The given username
+            pwd (str): The password
 
+        Raises:
+            Exception: Invalid username
+            Exception: No password
+            Exception: Invalid password
+
+        Returns:
+            str: The token if success
         """
 
         # !!! WARNING : SEND A HASHED PASSWORD FROM THE SITE, HASH THE PASSWORD WITHIN THE BROWSER AND THEN SEND IT HERE
@@ -46,14 +52,15 @@ class Auth:
 
     @staticmethod
     def register(username: str, pwd: str, permissions: int) -> str:
-        """
-        Register user from username,password and permissions flags. Returns token
+        """Register a user from given username, password and the permission flags
 
-        @param username: username
-        @param pwd: the password
-        @param permissions: the set of flags
-        @return: user token
+        Args:
+            username (str): The given username
+            pwd (str): The password
+            permissions (int): The permission flags
 
+        Returns:
+            str: The token if sucess
         """
         id = snowflakegen.__next__()
         hash = bcrypt.hashpw(base64.b64encode(hashlib.sha256(pwd).digest()), bcrypt.gensalt())
@@ -65,11 +72,13 @@ class Auth:
 
     @staticmethod
     def authorize(token: str) -> bool:
-        """
-        Authorize token. Returns True if success
+        """Authenticate a token
 
-        @param token: token
-        @return: True if success
+        Args:
+            token (str): The token
+
+        Returns:
+            bool: True if success
         """
         cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && token=%s);", (token,))
         if cursor.rowcount == 0:
@@ -78,6 +87,14 @@ class Auth:
 
     @staticmethod
     def get_token_permissions(token: str) -> int:
+        """Gets the permissions the token has
+
+        Args:
+            token (str): The token
+
+        Returns:
+            int: The permissions, None if token is expired/doesnt exist
+        """
         res = cursor.execute("SELECT permissions FROM tokens,chatusers WHERE (tokens.user = chatusers.id && token = %s);", (token,))
         if cursor.rowcount == 0:
             return None
@@ -86,6 +103,14 @@ class Auth:
 
     @staticmethod
     def get_permissions(userid: int) -> int:
+        """Gets the permissions for a user
+
+        Args:
+            userid (int): The user id
+
+        Returns:
+            int: The permissions
+        """
         res = cursor.execute("SELECT permissions FROM chatusers WHERE id = %s;", userid)
         if cursor.rowcount == 0:
             return None
@@ -94,6 +119,14 @@ class Auth:
 
     @staticmethod
     def get_token_user_id(token: str) -> int:
+        """Gets the user id from the token
+
+        Args:
+            token (str): The token
+
+        Returns:
+            int: The user id, None if token is expired/doesnt exist
+        """
         if Auth.authorize(token):
             query = "SELECT chatusers.id FROM tokens,chatusers WHERE tokens.user=chatusers.id;"
             cursor.execute(query)

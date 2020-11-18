@@ -1,9 +1,10 @@
 from datetime import date
 from api.base import *
+from __future__ import annotations
 import datetime
 
 
-class AssignmentInfo:
+class AssignmentInfo(ToDictable):
     def __init__(self, id: int, assignmentid: int, userid: int, status: int, attachment):
         self.id = id
         self.assignmentid = assignmentid
@@ -11,8 +12,17 @@ class AssignmentInfo:
         self.status = status
         self.attachment = attachment
 
+    def toDict(self):
+        D = {}
+        D["id"] = self.id
+        D["assignment-id"] = self.assignmentid
+        D["user-id"] = self.userid
+        D["status"] = self.status
+        D["attachment-url"] = f"/api/assignment/{self.assignmentid}/submissions/{self.id}/file"
+        return D
 
-class Assignment:
+
+class Assignment(ToDictable):
     NOT_SUBMITTED = 0
     UPLOADED = 1
     COMPLETE = 2
@@ -44,7 +54,7 @@ class Assignment:
         return id
 
     @staticmethod
-    def upload_assignment(userid: int, assignmentid: int, attachment):
+    def upload_assignment(userid: int, assignmentid: int, attachment) -> bool:
         """Submit an assigment
 
         Args:
@@ -95,7 +105,7 @@ class Assignment:
         db.commit()
 
     @staticmethod
-    def get_assignment(assignmentid: int):
+    def get_assignment(assignmentid: int) -> Assignment:
         """Gets an assignment by its id
 
         Args:
@@ -112,7 +122,7 @@ class Assignment:
         return assignment
 
     @staticmethod
-    def get_assignments_for_class(studentclass: str) -> list:
+    def get_assignments_for_class(studentclass: str) -> list[Assignment]:
         """Gets an assignment by the class
 
         Args:
@@ -142,3 +152,28 @@ class Assignment:
         for (id, aid, userid, status, attachment) in cursor:
             L.append(AssignmentInfo(id, aid, userid, status, attachment))
         return L
+
+    @staticmethod
+    def get_submitted_assignment(assignmentinfoid: int) -> AssignmentInfo:
+        """Gets the submitted assignment data by the id
+
+        Args:
+            assignmentinfoid (int): The submitted assignment id
+
+        Returns:
+            AssignmentInfo: The submitted assignment data
+        """
+        cursor.execute("SELECT * FROM assignmentinfo WHERE id = %s;", (assignmentinfoid,))
+        if cursor.rowcount == 0:
+            return None
+        res = cursor.fetchone()
+        return AssignmentInfo(res[0], res[1], res[2], res[3], res[4])
+
+    def toDict(self):
+        D = {}
+        D["id"] = self.id
+        D["class"] = self.studentclass
+        D["content"] = self.content
+        D["due-date"] = self.duedate.isoformat()
+        D["attachment-url"] = f"/api/assignment/{self.id}/attachment/"
+        return D

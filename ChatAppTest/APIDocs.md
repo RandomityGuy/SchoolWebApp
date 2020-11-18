@@ -214,7 +214,7 @@ Response:
 | 200 | OK |
 | 403 | Unauthorized |
 
-### `GET /api/assignment/<assignment-id>
+### `GET /api/assignment/<assignment-id>`
 
 Gets an assignment by its id.
 

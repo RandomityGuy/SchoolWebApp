@@ -1,3 +1,5 @@
+from api.assignments import AssignmentInfo
+from api.permissions import Permissions
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
 from flask.wrappers import Response
 
@@ -7,6 +9,7 @@ from werkzeug.datastructures import Headers
 import snowflake
 import api
 import magic
+import datetime
 
 
 app = Flask(__name__)
@@ -117,7 +120,7 @@ def userDM(user):
     userid = int(request.cookies.get("loginid"))
 
 
-@app.route("/users/<user>/avatar", methods=["GET", "POST"])
+@app.route("api/users/<user>/avatar", methods=["GET", "POST"])
 def userAvatar(user):
     if request.method == "GET":
         avatar = api.User.get_avatar(user)
@@ -179,6 +182,127 @@ def announcements():
                 return "OK"
             else:
                 return abort(403)
+        return abort(403)
+
+
+@app.route("/api/assignments/<studentclass>/", methods=["GET", "POST"])
+def assignments(studentclass):
+    if request.method == "GET":
+        userid = authenticate_user()
+        user = api.User.get_user(userid)
+        if user.studentclass == studentclass or api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+            assignments = api.Assignment.get_assignments_for_class(studentclass)
+            js = {}
+            L = []
+            for assignment in assignments:
+                L.append(assignment.toDict())
+            js["assignments"] = L
+            return jsonify(js)
+        else:
+            return abort(403)
+
+    if request.method == "POST":
+        userid = authenticate_user()
+        perms = api.Auth.get_permissions(userid)
+        if api.Permissions.has_permission(perms, api.Permissions.MANAGE_ASSIGNMENT):
+            content = request.args.get("content")
+            duedate = datetime.date.fromisoformat(request.args.get("due-date"))
+            api.Assignment.create_assignment(studentclass, content, duedate, request.data)
+            return "OK", 200
+        else:
+            return abort(403)
+
+
+@app.route("/api/assignment/<assignmentid>/", methods=["GET", "POST"])
+def assignment(assignmentid):
+    if request.method == "GET":
+        userid = authenticate_user()
+        user = api.User.get_user(userid)
+        assignment = api.Assignment.get_assignment(assignmentid)
+        if assignment == None:
+            return abort(403)
+        if user.studentclass == assignment.studentclass or api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+            return jsonify(assignment.toDict())
+        else:
+            return abort(403)
+
+    if request.method == "POST":
+        userid = authenticate_user()
+        user = api.User.get_user(userid)
+        assignment = api.Assignment.get_assignment(assignmentid)
+        if assignment == None:
+            return abort(403)
+        if user.studentclass == assignment.studentclass or api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+            submitted = api.Assignment.upload_assignment(userid, assignment, request.data)
+            if submitted:
+                return "OK", 200
+            else:
+                return abort(403)
+        else:
+            return abort(403)
+
+
+@app.route("/api/assignment/<assignmentid>/attachment/", methods=["GET"])
+def assignmentattachment(assignmentid):
+    userid = authenticate_user()
+    user = api.User.get_user(userid)
+    assignment = api.Assignment.get_assignment(assignmentid)
+    if assignment == None:
+        return abort(403)
+    if user.studentclass == assignment.studentclass or api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+        if assignment.attachment == None:
+            return abort(403)
+        resp = Response[assignment.attachment]
+        resp.headers["Content-Type"] = "application/octet-stream"
+        return resp
+    else:
+        return abort(403)
+
+
+@app.route("/api/assignment/<assignmentid>/submissions/<submissionid>/file", methods=["GET"])
+def assignmentinfo(assignmentid, submissionid):
+    userid = authenticate_user()
+    user = api.User.get_user(userid)
+    assignment = api.Assignment.get_assignment(assignmentid)
+    if assignment == None:
+        return abort(403)
+    if api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+        submission = api.Assignment.get_submitted_assignment(submissionid)
+        if submission == None:
+            return abort(403)
+        resp = Response(submission.attachment)
+        resp.headers["Content-Type"] = "application/octet-stream"
+        return resp
+    else:
+        return abort(403)
+
+
+@app.route("/api/assignment/<assignmentid>/submissions/", methods=["GET"])
+def assignmentinfo(assignmentid):
+    userid = authenticate_user()
+    user = api.User.get_user(userid)
+    assignment = api.Assignment.get_assignment(assignmentid)
+    if assignment == None:
+        return abort(403)
+    if api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+        submissions = api.Assignment.get_submitted_assignments(assignmentid)
+        resp = {"submissions": [submission.toDict() for submission in submissions]}
+        return jsonify(resp)
+    else:
+        return abort(403)
+
+
+@app.route("/api/assignment/<assignmentid>/submissions/<submissionid>/", methods=["PUT"])
+def assignmentinfomark(assignmentid, submissionid):
+    userid = authenticate_user()
+    user = api.User.get_user(userid)
+    assignment = api.Assignment.get_assignment(assignmentid)
+    if assignment == None:
+        return abort(403)
+    if api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
+        api.Assignment.mark_status(submissionid, request.args.get("status"))
+        return "OK", 200
+    else:
         return abort(403)
 
 

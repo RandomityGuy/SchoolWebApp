@@ -4,6 +4,7 @@ class Permissions:
     CAN_MODIFY_AVATAR = 2
     CAN_MODIFY_STUDENT = 4
     CAN_VIEW_ANY_CHANNEL = 8
+    MANAGE_ASSIGNMENT = 16
 
     @staticmethod
     def has_permission(flags: int, permission: int) -> bool:

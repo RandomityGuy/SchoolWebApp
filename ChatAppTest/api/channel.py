@@ -1,6 +1,7 @@
 from api.permissions import Permissions
 from api.auth import Auth
 from api.base import *
+from __future__ import annotations
 
 
 class ChatModel(ToDictable):
@@ -147,7 +148,7 @@ class Channel(ToDictable):
             db.commit()
 
     @staticmethod
-    def get_channel_list(userid: int) -> list:
+    def get_channel_list(userid: int) -> list[Channel]:
         """Gets the channel list for the given user
 
         Args:

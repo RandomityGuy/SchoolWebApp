@@ -10,6 +10,7 @@ import snowflake
 import api
 import magic
 import datetime
+from utils.QueryList import QueryList
 
 
 app = Flask(__name__)
@@ -115,9 +116,18 @@ def chat(channel):
     return make_response(render_template("chat.html", Model=api.ChatModel(chatmsgs, lastid, channel), userid=loginperson, Channels=api.ChannelModel(channelmodel), Users=api.UserModel(usermodel)))
 
 
-@app.route("/users/<user>/chat", methods=["GET"])
+@app.route("api/users/<user>/DM", methods=["GET"])
 def userDM(user):
-    userid = int(request.cookies.get("loginid"))
+    userid = authenticate_user()
+    thisuser = api.User.get_user(userid)
+    otheruser = api.User.get_user(user)
+    if otheruser == None:
+        return abort(403)
+    if thisuser.studentclass == otheruser.studentclass or Permissions.has_permission(thisuser.permissions, Permissions.DM_ANYONE):
+        dm = api.Channel.get_channel(api.Channel.create_DM(userid, user))
+        return jsonify(dm.toDict())
+    else:
+        return abort(403)
 
 
 @app.route("api/users/<user>/avatar", methods=["GET", "POST"])
@@ -305,6 +315,36 @@ def assignmentinfomark(assignmentid, submissionid):
         return "OK", 200
     else:
         return abort(403)
+
+
+@app.route("/api/classes/", methods=["GET"])
+def getclasses(classname):
+    userid = authenticate_user()
+    return jsonify(api.Class.get_classes())
+
+
+@app.route("/api/class/<classname>/", methods=["GET"])
+def getclassmembers(classname):
+    userid = authenticate_user()
+    return jsonify(QueryList(api.Class.get_everyone_for_class(classname)).Select(lambda x: x.toDict()).ToList())
+
+
+@app.route("/api/class/<classname>/students", methods=["GET"])
+def getclassstudents(classname):
+    userid = authenticate_user()
+    return jsonify(QueryList(api.Class.get_students_for_class(classname)).Select(lambda x: x.toDict()).ToList())
+
+
+@app.route("/api/class/<classname>/teachers", methods=["GET"])
+def getclassteachers(classname):
+    userid = authenticate_user()
+    return jsonify(QueryList(api.Class.get_class_teachers(classname)).Select(lambda x: x.toDict()).ToList())
+
+
+@app.route("/api/staff/", methods=["GET"])
+def getstaff(classname):
+    userid = authenticate_user()
+    return jsonify(QueryList(api.Class.get_staff()).Select(lambda x: x.toDict()).ToList())
 
 
 @app.route("/")

@@ -2,13 +2,22 @@ from api.base import *
 from __future__ import annotations
 
 
-class User:
+class User(ToDictable):
     def __init__(self, id, username, permissions, studentclass, avatarurl):
         self.id = id
         self.username = username
         self.permissions = permissions
         self.studentclass = studentclass
         self.avatarurl = avatarurl
+
+    def toDict(self):
+        D = {}
+        D["id"] = self.id
+        D["username"] = self.username
+        D["class"] = self.studentclass
+        D["avatar-url"] = self.avatarurl
+        D["permissions"] = self.permissions
+        return D
 
     @staticmethod
     def get_avatar(userid: int):

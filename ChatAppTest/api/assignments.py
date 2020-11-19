@@ -5,12 +5,13 @@ import datetime
 
 
 class AssignmentInfo(ToDictable):
-    def __init__(self, id: int, assignmentid: int, userid: int, status: int, attachment):
+    def __init__(self, id: int, assignmentid: int, userid: int, status: int, attachment, attachmentname: str):
         self.id = id
         self.assignmentid = assignmentid
         self.userid = userid
         self.status = status
         self.attachment = attachment
+        self.attachmentname = attachmentname
 
     def toDict(self):
         D = {}
@@ -18,6 +19,7 @@ class AssignmentInfo(ToDictable):
         D["assignment-id"] = self.assignmentid
         D["user-id"] = self.userid
         D["status"] = self.status
+        D["attachment"] = self.attachmentname
         D["attachment-url"] = f"/api/assignment/{self.assignmentid}/submissions/{self.id}/file"
         return D
 
@@ -28,33 +30,35 @@ class Assignment(ToDictable):
     COMPLETE = 2
     INCOMPLETE = 3
 
-    def __init__(self, id: int, studentclass: str, content: str, duedate: date, attachment=None):
+    def __init__(self, id: int, studentclass: str, content: str, duedate: date, attachmentname: str = None, attachment=None):
         self.id = id
         self.studentclass = studentclass
         self.content = content
         self.duedate = duedate
         self.attachment = attachment
+        self.attachmentname = attachmentname
 
     @staticmethod
-    def create_assignment(studentclass: str, content: str, duedate: datetime.date, attachment=None) -> int:
+    def create_assignment(studentclass: str, content: str, duedate: datetime.date, attachmentname: str = None, attachment=None) -> int:
         """Creates an assignment for the given class of contents and due date with optional attachment
 
         Args:
             studentclass (str): The target class
             content (str): The content of the assigment, can be a short description as well
             duedate (datetime.date): The due date of the assigment
+            attachmentname (str, optional): The attachment name. Defaults to None.
             attachment ([type], optional): The attachment. Defaults to None.
 
         Returns:
             int: The assigment id
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s)", (id, studentclass, content, attachment, duedate.isoformat()))
+        cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s)", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
         db.commit()
         return id
 
     @staticmethod
-    def upload_assignment(userid: int, assignmentid: int, attachment) -> bool:
+    def upload_assignment(userid: int, assignmentid: int, attachmentname: str, attachment) -> bool:
         """Submit an assigment
 
         Args:
@@ -69,7 +73,7 @@ class Assignment(ToDictable):
         if cursor.rowcount == 0:
             return False
             # You uploaded it too late
-        cursor.execute("INSERT INTO assignmentinfo VALUES(%s,%s,%s,%s,%s);", (snowflakegen.__next__(), assignmentid, userid, 0, Assignment.UPLOADED, attachment))
+        cursor.execute("INSERT INTO assignmentinfo VALUES(%s,%s,%s,%s,%s,%s);", (snowflakegen.__next__(), assignmentid, userid, 0, Assignment.UPLOADED, attachment, attachmentname))
         db.commit()
         return True
 
@@ -118,7 +122,7 @@ class Assignment(ToDictable):
         if cursor.rowcount == 0:
             return None
         res = cursor.fetchone()
-        assignment = Assignment(res[0], res[1], res[2], res[4], res[3])
+        assignment = Assignment(res[0], res[1], res[2], res[5], res[4], res[3])
         return assignment
 
     @staticmethod
@@ -133,8 +137,8 @@ class Assignment(ToDictable):
         """
         cursor.execute("SELECT * FROM assignments WHERE class = %s;", (studentclass,))
         L = []
-        for (id, studentclass, content, attachment, submission) in cursor:
-            L.append(Assignment(id, studentclass, content, submission, attachment))
+        for (id, studentclass, content, attachment, attachmentname, submission) in cursor:
+            L.append(Assignment(id, studentclass, content, submission, attachmentname, attachment))
         return L
 
     @staticmethod
@@ -149,8 +153,8 @@ class Assignment(ToDictable):
         """
         cursor.execute("SELECT * FROM assignmentinfo WHERE assignmentid = %s;", (assignmentid,))
         L = []
-        for (id, aid, userid, status, attachment) in cursor:
-            L.append(AssignmentInfo(id, aid, userid, status, attachment))
+        for (id, aid, userid, status, attachment, attachmentname) in cursor:
+            L.append(AssignmentInfo(id, aid, userid, status, attachment, attachmentname))
         return L
 
     @staticmethod
@@ -167,7 +171,7 @@ class Assignment(ToDictable):
         if cursor.rowcount == 0:
             return None
         res = cursor.fetchone()
-        return AssignmentInfo(res[0], res[1], res[2], res[3], res[4])
+        return AssignmentInfo(res[0], res[1], res[2], res[3], res[4], res[5])
 
     def toDict(self):
         D = {}
@@ -175,5 +179,6 @@ class Assignment(ToDictable):
         D["class"] = self.studentclass
         D["content"] = self.content
         D["due-date"] = self.duedate.isoformat()
+        D["attachment"] = self.attachmentname
         D["attachment-url"] = f"/api/assignment/{self.id}/attachment/"
         return D

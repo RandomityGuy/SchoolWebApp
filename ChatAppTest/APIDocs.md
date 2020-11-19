@@ -186,6 +186,7 @@ Response:
             "class": str // The class the assignment is targeted at
             "content": str // The description of the assignment
             "due-date": str // The due date of the assignment
+            "attachment": str // The filename of the attachment
             "attachment-url": str // The url to the file attached to the announcement
         }...
     ]
@@ -202,6 +203,7 @@ Query String Parameters:
 | token | str | Authentication token | Yes | None |
 | content | str | The description of the assignment | Yes | None |
 | due-date | str | The due date of the assignment | Yes | None |
+| attachment-name | str | The filename of the attachment | No | None |
 
 Post Data:
 | FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
@@ -231,6 +233,7 @@ Response:
     "class": str // The class the assignment is targeted at
     "content": str // The description of the assignment
     "due-date": str // The due date of the assignment
+    "attachment": str // The filename of the attachment
     "attachment-url": str // The url to the file attached to theannouncement
 }
 ```
@@ -258,6 +261,7 @@ Query String Parameters:
 | FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
+| attachment-name | str | The filename of the attachment | Yes | None |
 
 Post Data:
 | FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
@@ -289,6 +293,7 @@ Response:
             "assignment-id": int // The id of the assignment that this submission is for
             "user-id": int // The id of the user who submitted this assignment
             "status": int // The status of this assignment
+            "attachment": str // The filename of the attachment
             "attachment-url": str // The url to the submitted data of the assignment
         }...
     ]

@@ -207,7 +207,8 @@ def assignments(studentclass):
         if api.Permissions.has_permission(perms, api.Permissions.MANAGE_ASSIGNMENT):
             content = request.args.get("content")
             duedate = datetime.date.fromisoformat(request.args.get("due-date"))
-            api.Assignment.create_assignment(studentclass, content, duedate, request.data)
+            attachmentname = request.args.get("attachment-name", None)
+            api.Assignment.create_assignment(studentclass, content, duedate, attachmentname, request.data)
             return "OK", 200
         else:
             return abort(403)
@@ -233,7 +234,7 @@ def assignment(assignmentid):
         if assignment == None:
             return abort(403)
         if user.studentclass == assignment.studentclass or api.Permissions.has_permission(user.permissions, api.Permissions.MANAGE_ASSIGNMENT):
-            submitted = api.Assignment.upload_assignment(userid, assignment, request.data)
+            submitted = api.Assignment.upload_assignment(userid, assignment, request.args.get("attachment-name"), request.data)
             if submitted:
                 return "OK", 200
             else:

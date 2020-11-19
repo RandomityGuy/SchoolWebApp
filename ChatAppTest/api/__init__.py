@@ -5,3 +5,4 @@ from api.permissions import *
 from api.announcements import *
 from api.user import *
 from api.assignments import *
+from api.class import *

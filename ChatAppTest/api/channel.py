@@ -56,6 +56,8 @@ class ChatAuthor(ToDictable):
 
 
 class Channel(ToDictable):
+    DM_CHANNEL = 1
+
     def __init__(self, id, name, flags):
         self.id = id
         self.name = name
@@ -87,13 +89,16 @@ class Channel(ToDictable):
         return False
 
     @staticmethod
-    def create_channel(channelname: str, members: list[int], flags: int):
+    def create_channel(channelname: str, members: list[int], flags: int) -> int:
         """Create a channel with given channel name and specified channel members and flags
 
         Args:
             channelname (str): The channel name
             members (list[int]): The list of members in the channel
             flags (int): The flags of the channel
+
+        Returns:
+            int: The created channel id
         """
 
         channelid = snowflakegen.__next__()
@@ -101,6 +106,7 @@ class Channel(ToDictable):
         for member in members:
             cursor.execute("INSERT INTO channelmembers VALUES(%s,%s,%s);", (snowflakegen.__next__(), channelid, member))
         db.commit()
+        return channelid
 
     @staticmethod
     def channel_exists(channelid: int) -> bool:
@@ -112,15 +118,35 @@ class Channel(ToDictable):
         Returns:
             bool: True if it exists
         """
-        cursor.execute("SELECT id from channels WHERE id = %s;", channelid)
+        cursor.execute("SELECT id from channels WHERE id = %s;", (channelid,))
         if len(cursor) != 0:
             return True
         return False
 
     @staticmethod
-    def DM_exists(userone, usertwo):
-        # TODO: Figure this out
-        query = f"select * from channels JOIN (select * from channelmembers group by channelId having count(*) = 2) as X where channels.id = X.channelId;"
+    def DM_exists(userone: int, usertwo: int) -> int | None:
+        """Checks if a DM between the two users exists
+
+        Args:
+            userone (int): The first user
+            usertwo (int): The second user
+
+        Returns:
+            int | None: The DM channel id if it exists, else None
+        """
+        query = "SELECT A.channelId, COUNT(*) FROM (SELECT channelmembers.id, channelId, userId FROM channelmembers, channels WHERE channels.flags = %s && channels.id = channelmembers.channelId) AS A WHERE A.userid IN (%s,%s) GROUP BY A.channelId HAVING COUNT(*) = 2;"
+        cursor.execute(query, (Channel.DM_CHANNEL, userone, usertwo))
+        if cursor.rowcount == 0:
+            return None
+        return cursor.fetchone()[0]
+
+    @staticmethod
+    def create_DM(userone: int, usertwo: int) -> int:
+        dm = Channel.DM_exists(userone, usertwo)
+        if dm != None:
+            return dm
+        else:
+            return Channel.create_channel(f"DM_{userone}_{usertwo}", [userone, usertwo], Channel.DM_CHANNEL)
 
     @staticmethod
     def join_channel_if_exists(channelid: int, userid: int):
@@ -158,13 +184,29 @@ class Channel(ToDictable):
             list[Channel]: The channel list
         """
         if Permissions.has_permission(Auth.get_permissions(userid), Permissions.CAN_VIEW_ANY_CHANNEL):
-            cursor.execute("SELECT channelId,name,flags FROM channelmembers,channels WHERE userid = %s;", userid)
+            cursor.execute("SELECT channelId,name,flags FROM channelmembers,channels WHERE userid = %s;", (userid,))
         else:
-            cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);", userid)
+            cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);", (userid,))
         retlist = []
         for (id, name, flags) in cursor:
             retlist.append(Channel(id, name, flags))
         return retlist
+
+    @staticmethod
+    def get_channel(channelid: int) -> Channel:
+        """Gets a channel from its id
+
+        Args:
+            channelid (int): The given channel id
+
+        Returns:
+            Channel: The channel
+        """
+        cursor.execute("select channelId,name,flags from channelmembers,channels where id = %s", (channelid,))
+        retlist = []
+        for (id, name, flags) in cursor:
+            retlist.append(Channel(id, name, flags))
+        return retlist[0]
 
     @staticmethod
     def get_user_list(channelid: int) -> list[ChatAuthor]:
@@ -198,7 +240,7 @@ class Channel(ToDictable):
         canAccessThisChannel = Channel.validate_access(channel, userid)
         if not canAccessThisChannel:
             return False
-        cursor.execute("INSERT INTO ChatMessages VALUES(%s,%s,%s,%s);", id, userid, msg, channel)
+        cursor.execute("INSERT INTO ChatMessages VALUES(%s,%s,%s,%s);", (id, userid, msg, channel))
         db.commit()
         return True
 

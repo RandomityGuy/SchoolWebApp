@@ -7,7 +7,7 @@ Query String Parameters:
 | ----- | ---- | -------------------- | -------- | ------- |
 | token | str | Authentication token | Yes | None |
 
-JSON Response
+JSON Response:
 
 ```
 {
@@ -32,7 +32,7 @@ Query String Parameters:
 | messages | int | how many messages you want the api to return | No | 50 |
 | after | int | after what timestamp(snowflake) should the api return messages | No | 0 |
 
-JSON Response
+JSON Response:
 
 ```
 {
@@ -64,7 +64,7 @@ Query String Parameters:
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
 
-Response
+JSON Response:
 
 ```
 {
@@ -73,6 +73,25 @@ Response
         "id": int // The id of the user
         "name": str // The name of the user
     }...
+}
+```
+
+### `GET /api/users/<user>/DM`
+
+Creates a DM with the specified user.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+{
+    "id": int // The DM channel id
+    "name": str // The DM channel name
+    "flags": int // The DM channel flags
 }
 ```
 
@@ -137,7 +156,7 @@ Query String Parameters:
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
 
-Response:
+JSON Response:
 
 ```
 [
@@ -176,7 +195,7 @@ Query String Parameters:
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
 
-Response:
+JSON Response:
 
 ```
 {
@@ -225,7 +244,7 @@ Query String Parameters:
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
 
-Response:
+JSON Response:
 
 ```
 {
@@ -283,7 +302,7 @@ Query String Parameters:
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
 
-Response:
+JSON Response:
 
 ```
 {
@@ -330,3 +349,112 @@ Response:
 |-------------|----------|
 | 200 | OK |
 | 403 | Unauthorized |
+
+### `GET /api/classes`
+
+Gets a list of classes.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    "class_name"...
+]
+```
+
+### `GET /api/class/<class-name>/`
+
+Gets a list of members in the class.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    {
+        "id": int // The id of the user
+        "username": str // The username of the user
+        "class": str // The class of the user
+        "avatar-url": str // The url to the avatar of the user
+        "permissions": int // The permissions of the user
+    }...
+]
+```
+
+### `GET /api/class/<class-name>/students`
+
+Gets a list of students in the class.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    {
+        "id": int // The id of the user
+        "username": str // The username of the user
+        "class": str // The class of the user
+        "avatar-url": str // The url to the avatar of the user
+        "permissions": int // The permissions of the user
+    }...
+]
+```
+
+### `GET /api/class/<class-name>/teachers`
+
+Gets a list of teachers in the class.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    {
+        "id": int // The id of the user
+        "username": str // The username of the user
+        "class": str // The class of the user
+        "avatar-url": str // The url to the avatar of the user
+        "permissions": int // The permissions of the user
+    }...
+]
+```
+
+### `GET /api/staff`
+
+Gets a list of staff members.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    {
+        "id": int // The id of the user
+        "username": str // The username of the user
+        "class": str // The class of the user
+        "avatar-url": str // The url to the avatar of the user
+        "permissions": int // The permissions of the user
+    }...
+]
+```

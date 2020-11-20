@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.20, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.22, for Win64 (x86_64)
 --
 -- Host: localhost    Database: chatdb
 -- ------------------------------------------------------
--- Server version	8.0.20
+-- Server version	8.0.22
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -39,6 +39,58 @@ LOCK TABLES `announcements` WRITE;
 /*!40000 ALTER TABLE `announcements` DISABLE KEYS */;
 INSERT INTO `announcements` VALUES (1,1,'XII-A','test');
 /*!40000 ALTER TABLE `announcements` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `assignmentinfo`
+--
+
+DROP TABLE IF EXISTS `assignmentinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `assignmentinfo` (
+  `id` bigint DEFAULT NULL,
+  `assignmentid` bigint DEFAULT NULL,
+  `userid` bigint DEFAULT NULL,
+  `status` int DEFAULT NULL,
+  `attachment` blob,
+  `attachmentname` varchar(128) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `assignmentinfo`
+--
+
+LOCK TABLES `assignmentinfo` WRITE;
+/*!40000 ALTER TABLE `assignmentinfo` DISABLE KEYS */;
+/*!40000 ALTER TABLE `assignmentinfo` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `assignments`
+--
+
+DROP TABLE IF EXISTS `assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `assignments` (
+  `id` bigint DEFAULT NULL,
+  `class` varchar(32) DEFAULT NULL,
+  `content` varchar(512) DEFAULT NULL,
+  `attachment` blob,
+  `attachmentname` varchar(128) DEFAULT NULL,
+  `submission` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `assignments`
+--
+
+LOCK TABLES `assignments` WRITE;
+/*!40000 ALTER TABLE `assignments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -130,6 +182,7 @@ CREATE TABLE `chatusers` (
   `password` varchar(256) DEFAULT NULL,
   `permissions` smallint DEFAULT NULL,
   `class` varchar(32) DEFAULT NULL,
+  `avatar` blob,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -140,8 +193,34 @@ CREATE TABLE `chatusers` (
 
 LOCK TABLES `chatusers` WRITE;
 /*!40000 ALTER TABLE `chatusers` DISABLE KEYS */;
-INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL,'XII-A'),(2,'TestUser',NULL,NULL,'XII-A');
+INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL,'XII-A',NULL),(2,'TestUser',NULL,NULL,'XII-A',NULL);
 /*!40000 ALTER TABLE `chatusers` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `dmrequests`
+--
+
+DROP TABLE IF EXISTS `dmrequests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dmrequests` (
+  `id` bigint NOT NULL,
+  `toUser` bigint DEFAULT NULL,
+  `byUser` bigint DEFAULT NULL,
+  `requestcontent` varchar(512) DEFAULT NULL,
+  `expires` date DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `dmrequests`
+--
+
+LOCK TABLES `dmrequests` WRITE;
+/*!40000 ALTER TABLE `dmrequests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `dmrequests` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -178,4 +257,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-10-24 11:36:16
+-- Dump completed on 2020-11-20 23:01:07

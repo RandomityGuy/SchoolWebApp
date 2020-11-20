@@ -1,7 +1,9 @@
+from api.channel import Channel
 from api.assignments import AssignmentInfo
 from api.permissions import Permissions
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
 from flask.wrappers import Response
+from utils.QueryList import QueryList
 
 import mysql.connector
 import jinja2
@@ -10,7 +12,6 @@ import snowflake
 import api
 import magic
 import datetime
-from utils.QueryList import QueryList
 
 
 app = Flask(__name__)
@@ -24,7 +25,7 @@ def authenticate_user() -> int:
     return userid
 
 
-@app.route("/api/channels/", methods=["GET"])
+@app.route("/api/channels", methods=["GET"])
 def get_channels():
     userid = authenticate_user()
     return jsonify(api.ChannelModel(api.Channel.get_channel_list(userid)).toDict())
@@ -165,7 +166,7 @@ def auth():
         abort(403)
 
 
-@app.route("/api/announcements/", methods=["GET", "POST"])
+@app.route("/api/announcements", methods=["GET", "POST"])
 def announcements():
     if request.method == "GET":
         userid = authenticate_user()
@@ -195,7 +196,7 @@ def announcements():
         return abort(403)
 
 
-@app.route("/api/assignments/<studentclass>/", methods=["GET", "POST"])
+@app.route("/api/assignments/<studentclass>", methods=["GET", "POST"])
 def assignments(studentclass):
     if request.method == "GET":
         userid = authenticate_user()
@@ -224,7 +225,7 @@ def assignments(studentclass):
             return abort(403)
 
 
-@app.route("/api/assignment/<assignmentid>/", methods=["GET", "POST"])
+@app.route("/api/assignment/<assignmentid>", methods=["GET", "POST"])
 def assignment(assignmentid):
     if request.method == "GET":
         userid = authenticate_user()
@@ -253,7 +254,7 @@ def assignment(assignmentid):
             return abort(403)
 
 
-@app.route("/api/assignment/<assignmentid>/attachment/", methods=["GET"])
+@app.route("/api/assignment/<assignmentid>/attachment", methods=["GET"])
 def assignmentattachment(assignmentid):
     userid = authenticate_user()
     user = api.User.get_user(userid)
@@ -288,7 +289,7 @@ def assignmentinfo(assignmentid, submissionid):
         return abort(403)
 
 
-@app.route("/api/assignment/<assignmentid>/submissions/", methods=["GET"])
+@app.route("/api/assignment/<assignmentid>/submissions", methods=["GET"])
 def assignmentinfo(assignmentid):
     userid = authenticate_user()
     user = api.User.get_user(userid)
@@ -303,7 +304,7 @@ def assignmentinfo(assignmentid):
         return abort(403)
 
 
-@app.route("/api/assignment/<assignmentid>/submissions/<submissionid>/", methods=["PUT"])
+@app.route("/api/assignment/<assignmentid>/submissions/<submissionid>", methods=["PUT"])
 def assignmentinfomark(assignmentid, submissionid):
     userid = authenticate_user()
     user = api.User.get_user(userid)
@@ -317,13 +318,13 @@ def assignmentinfomark(assignmentid, submissionid):
         return abort(403)
 
 
-@app.route("/api/classes/", methods=["GET"])
+@app.route("/api/classes", methods=["GET"])
 def getclasses(classname):
     userid = authenticate_user()
     return jsonify(api.Class.get_classes())
 
 
-@app.route("/api/class/<classname>/", methods=["GET"])
+@app.route("/api/class/<classname>", methods=["GET"])
 def getclassmembers(classname):
     userid = authenticate_user()
     return jsonify(QueryList(api.Class.get_everyone_for_class(classname)).Select(lambda x: x.toDict()).ToList())
@@ -341,10 +342,76 @@ def getclassteachers(classname):
     return jsonify(QueryList(api.Class.get_class_teachers(classname)).Select(lambda x: x.toDict()).ToList())
 
 
-@app.route("/api/staff/", methods=["GET"])
+@app.route("/api/staff", methods=["GET"])
 def getstaff(classname):
     userid = authenticate_user()
     return jsonify(QueryList(api.Class.get_staff()).Select(lambda x: x.toDict()).ToList())
+
+
+@app.route("/api/request/<requestid>", methods=["GET"])
+def get_dm_request(requestid):
+    userid = authenticate_user()
+    req = api.DMRequest.get_dm_request(requestid)
+    if req == None:
+        return abort(403)
+    if req.to_user == userid:
+        return jsonify(req.toDict())
+    return abort(403)
+
+
+@app.route("/api/requests", methods=["GET", "POST"])
+def get_dm_requests():
+    userid = authenticate_user()
+    if request.method == "GET":
+        reqs = QueryList(api.DMRequest.get_dm_requests(userid)).Select(lambda x: x.toDict()).ToList()
+        return jsonify(reqs)
+    if request.method == "POST":
+        touser = request.args.get("target")
+        perms = api.Auth.get_permissions(touser)
+        if api.Permissions.has_permission(perms, api.Permissions.SUPERUSER):
+            api.DMRequest.request_dm(touser, userid, request.json["content"])
+            return "OK", 200
+        else:
+            return abort(403)
+    abort(403)
+
+
+@app.route("/api/requests/sent", methods=["GET"])
+def get_dm_requests():
+    userid = authenticate_user()
+    if request.method == "GET":
+        reqs = QueryList(api.DMRequest.get_sent_dm_requests(userid)).Select(lambda x: x.toDict()).ToList()
+        return jsonify(reqs)
+    abort(403)
+
+
+@app.route("/api/request/<requestid>/accept", methods=["GET"])
+def accept_dm(requestid):
+    userid = authenticate_user()
+    req = api.DMRequest.get_dm_request(requestid)
+    if req == None:
+        return abort(403)
+
+    if req.to_user == userid:
+        dm = api.DMRequest.accept_dm(requestid)
+        ch = api.Channel.get_channel(dm)
+        return jsonify(ch.toDict())
+
+    return abort(403)
+
+
+@app.route("/api/requests/<requestid>/reject", methods=["GET"])
+def accept_dm(requestid):
+    userid = authenticate_user()
+    req = api.DMRequest.get_dm_request(requestid)
+    if req == None:
+        return abort(403)
+
+    if req.to_user == userid:
+        dm = api.DMRequest.reject_dm(requestid)
+        return "OK", 200
+
+    return abort(403)
 
 
 @app.route("/")

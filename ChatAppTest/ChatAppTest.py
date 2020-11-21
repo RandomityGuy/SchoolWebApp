@@ -82,7 +82,7 @@ def get_user_list(channel):
 
 @app.route("/api/channels/<channel>/messages", methods=["POST"])
 def send_chat_message(channel):
-    msg = request.json.get["messagebox"]
+    msg = request.json.get["message"]
     userid = authenticate_user()
 
     canAccessThisChannel = api.Channel.validate_access(channel, userid)
@@ -179,8 +179,8 @@ def announcements():
 
     if request.method == "POST":
         token = request.form.get("token")
-        toclass = request.form.get("class")
-        content = request.form.get("content")
+        toclass = request.json.get("class")
+        content = request.json.get("content")
 
         if not api.Auth.authorize(token):
             return abort(403)
@@ -366,7 +366,7 @@ def get_dm_requests():
         reqs = QueryList(api.DMRequest.get_dm_requests(userid)).Select(lambda x: x.toDict()).ToList()
         return jsonify(reqs)
     if request.method == "POST":
-        touser = request.args.get("target")
+        touser = request.json.get("target")
         perms = api.Auth.get_permissions(touser)
         if api.Permissions.has_permission(perms, api.Permissions.SUPERUSER):
             api.DMRequest.request_dm(touser, userid, request.json["content"])

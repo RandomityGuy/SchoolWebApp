@@ -1,4 +1,5 @@
 from api.permissions import Permissions
+from api.dmrequests import DMRequest
 from api.auth import Auth
 from api.base import *
 from __future__ import annotations
@@ -57,6 +58,7 @@ class ChatAuthor(ToDictable):
 
 class Channel(ToDictable):
     DM_CHANNEL = 1
+    REQ_CHANNEL = 2
 
     def __init__(self, id, name, flags):
         self.id = id
@@ -80,6 +82,9 @@ class Channel(ToDictable):
 
         if Permissions.has_permission(Auth.get_permissions(userid), Permissions.CAN_VIEW_ANY_CHANNEL):
             return True
+
+        if Channel.is_expired(channel):
+            return False
 
         cursor.execute("select id from channelmembers where channelId = %s && userid = %s;", (channel, userid))
 
@@ -134,19 +139,29 @@ class Channel(ToDictable):
         Returns:
             int | None: The DM channel id if it exists, else None
         """
-        query = "SELECT A.channelId, COUNT(*) FROM (SELECT channelmembers.id, channelId, userId FROM channelmembers, channels WHERE channels.flags = %s && channels.id = channelmembers.channelId) AS A WHERE A.userid IN (%s,%s) GROUP BY A.channelId HAVING COUNT(*) = 2;"
-        cursor.execute(query, (Channel.DM_CHANNEL, userone, usertwo))
+        query = "SELECT A.channelId, COUNT(*) FROM (SELECT channelmembers.id, channelId, userId FROM channelmembers, channels WHERE (channels.flags & %s) = %s && channels.id = channelmembers.channelId) AS A WHERE A.userid IN (%s,%s) GROUP BY A.channelId HAVING COUNT(*) = 2;"
+        cursor.execute(query, (Channel.DM_CHANNEL, Channel.DM_CHANNEL, userone, usertwo))
         if cursor.rowcount == 0:
             return None
         return cursor.fetchone()[0]
 
     @staticmethod
-    def create_DM(userone: int, usertwo: int) -> int:
+    def create_DM(userone: int, usertwo: int, is_req: bool = False) -> int:
+        """Creates a DM channel between two users
+
+        Args:
+            userone (int): The first user
+            usertwo (int): The second user
+            is_req (bool, optional): Is this DM created from a DM request?. Defaults to False.
+
+        Returns:
+            int: The DM channel id
+        """
         dm = Channel.DM_exists(userone, usertwo)
         if dm != None:
             return dm
         else:
-            return Channel.create_channel(f"DM_{userone}_{usertwo}", [userone, usertwo], Channel.DM_CHANNEL)
+            return Channel.create_channel(f"DM_{userone}_{usertwo}", [userone, usertwo], Channel.DM_CHANNEL | (Channel.REQ_CHANNEL if is_req else 0))
 
     @staticmethod
     def join_channel_if_exists(channelid: int, userid: int):
@@ -202,11 +217,37 @@ class Channel(ToDictable):
         Returns:
             Channel: The channel
         """
-        cursor.execute("select channelId,name,flags from channelmembers,channels where id = %s", (channelid,))
+        cursor.execute("select channelId,name,flags from channelmembers,channels where id = %s;", (channelid,))
+        if cursor.rowcount == None:
+            return None
         retlist = []
         for (id, name, flags) in cursor:
             retlist.append(Channel(id, name, flags))
         return retlist[0]
+
+    @staticmethod
+    def is_expired(channelid: int) -> bool:
+        """Checks if a given channel is expired because of expired DM request
+
+        Args:
+            channelid (int): The channel id
+
+        Raises:
+            Exception: The requested channel has invalid member count or flags
+
+        Returns:
+            bool: True if its expired
+        """
+        ch = Channel.get_channel(channelid)
+        if ch == None:
+            return True
+        if Permissions.has_permission(ch, Channel.REQ_CHANNEL):
+            members = Channel.get_user_list(channelid)
+            if len(members) != 2:
+                raise Exception("DM requested channel cannot have member count other than 2")
+            return (not DMRequest.dm_exists(members[0].id, members[1].id)) and (not DMRequest.dm_exists(members[1].id, members[0].id))
+        else:
+            return False
 
     @staticmethod
     def get_user_list(channelid: int) -> list[ChatAuthor]:

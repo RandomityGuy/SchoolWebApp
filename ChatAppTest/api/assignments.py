@@ -53,7 +53,7 @@ class Assignment(ToDictable):
             int: The assigment id
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s)", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
+        cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s);", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
         db.commit()
         return id
 

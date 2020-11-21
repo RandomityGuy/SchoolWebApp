@@ -1,3 +1,17 @@
+## AUTHENTICATION
+
+### `POST /api/auhorize`
+
+Used to authenticate a user, returns a token if authentication successful.
+
+JSON Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| username | str | The username | Yes | None |
+| pwd | str | The password | Yes | None |
+
+## CHANNELS
+
 ### `GET /api/channels`
 
 Gets a list of channels the given user attached to the token can view.
@@ -76,6 +90,22 @@ JSON Response:
 }
 ```
 
+### `DELETE /api/channels/<channel>`
+
+Leave a channel.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+## USERS
+
 ### `GET /api/users/<user>/DM`
 
 Creates a DM with the specified user.
@@ -123,29 +153,7 @@ Response
 | 200 | OK |
 | 403 | Unauthorized |
 
-### `DELETE /api/channels/<channel>`
-
-Leave a channel.
-
-Query String Parameters:
-| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
-|-------|------|-------------|----------|--------|
-| token | str | Authentication token | Yes | None |
-Response:
-| STATUS CODE | RESPONSE |
-|-------------|----------|
-| 200 | OK |
-| 403 | Unauthorized |
-
-### `POST /api/auhorize`
-
-Used to authenticate a user, returns a token if authentication successful.
-
-Query String Parameters:
-| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
-|-------|------|-------------|----------|--------|
-| username | str | The username | Yes | None |
-| pwd | str | The password | Yes | None |
+## ANNOUNCEMENTS
 
 ### `GET /api/announcements`
 
@@ -177,6 +185,10 @@ Query String Parameters:
 | FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
+
+JSON Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
 | class | str | The class the announcement is targeted towards | Yes | None |
 | content | str | The content of the announcement | Yes | None |
 
@@ -185,6 +197,8 @@ Response:
 |-------------|----------|
 | 200 | OK |
 | 403 | Unauthorized |
+
+## ASSIGNMENTS
 
 ### `GET /api/assignments/<class>/`
 
@@ -350,6 +364,8 @@ Response:
 | 200 | OK |
 | 403 | Unauthorized |
 
+## CLASSES
+
 ### `GET /api/classes`
 
 Gets a list of classes.
@@ -457,4 +473,118 @@ JSON Response:
         "permissions": int // The permissions of the user
     }...
 ]
+```
+
+## DM REQUESTS
+
+### `GET /api/requests`
+
+Gets a list of incoming DM requests. (Available for SUPERUSER permissions only)
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    {
+        "id": int // The DM request id
+        "to-user": int // The recipient of the DM request
+        "by-user": int // The sender of the DM request
+        "content": str // The short description of the DM request
+        "expires": str // The date till the DM request or the created DM channel lasts
+    }...
+]
+```
+
+### `POST /api/requests`
+
+Creates a DM request to the specified recipient. (Specified recipient must be SUPERUSER or above)
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Parameters:
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| target | int | The user to which the request has to be sent | Yes | None |
+| content | str | The description of the request | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `GET /api/requests/sent`
+
+Gets a list of sent DM requests.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+[
+    {
+        "id": int // The DM request id
+        "to-user": int // The recipient of the DM request
+        "by-user": int // The sender of the DM request
+        "content": str // The short description of the DM request
+        "expires": str // The date till the DM request or the created DM channel lasts
+    }...
+]
+```
+
+### `GET /api/request/<request-id>/accept`
+
+Accepts a DM request and returns the created DM channel info
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+{
+    "flags": int // The flags of the channel
+    "id": int // The id of the channel
+    "name: str // The name of the channel
+}
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | JSON Response |
+| 403 | Unauthorized |
+```
+
+### `GET /api/request/<request-id>/rejects`
+
+Rejects a DM request
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+```
+
 ```

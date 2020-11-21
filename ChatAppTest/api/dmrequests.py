@@ -25,6 +25,22 @@ class DMRequest(ToDictable):
         return D
 
     @staticmethod
+    def dm_exists(to_user: int, by_user: int) -> bool:
+        """Check if a DM request between two users exists and/or it isnt expired
+
+        Args:
+            to_user (int): The user to which the request is to
+            by_user (int): The user requesting
+
+        Returns:
+            bool: True if DM exists and it isnt expired.
+        """
+        cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
+        if cursor.rowcount == 0:
+            return False
+        return True
+
+    @staticmethod
     def request_dm(to_user: int, by_user: int, content: str) -> int:
         """Request a DM to be done to a user by a user.
 
@@ -37,7 +53,7 @@ class DMRequest(ToDictable):
             int: The DM request id
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATEADD(d,%s,CURDATE()))", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
+        cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATEADD(d,%s,CURDATE()));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
         db.commit()
         return id
 
@@ -111,5 +127,5 @@ class DMRequest(ToDictable):
         Args:
             id (int): The DM request id
         """
-        cursor.execute("DELETE FROM dmrequests WHERE id = %s", (id,))
+        cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
         db.commit()

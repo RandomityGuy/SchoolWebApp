@@ -1,14 +1,8 @@
-from api.channel import Channel
-from api.assignments import AssignmentInfo
 from api.permissions import Permissions
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
 from flask.wrappers import Response
 from utils.QueryList import QueryList
-from werkzeug.datastructures import Headers
 
-import mysql.connector
-import jinja2
-import snowflake
 import api
 import magic
 import datetime
@@ -29,6 +23,17 @@ def authenticate_user() -> int:
 def get_channels():
     userid = authenticate_user()
     return jsonify(api.ChannelModel(api.Channel.get_channel_list(userid)).toDict())
+
+
+@app.route("/api/channels/<channel>", methods=["GET"])
+def get_channel(channel):
+    userid = authenticate_user()
+
+    if not api.Channel.validate_access(channel, userid):
+        abort(403)
+
+    ch = api.Channel.get_channel(channel)
+    return jsonify(ch.toDict())
 
 
 @app.route("/api/channels/<channel>/messages", methods=["GET"])

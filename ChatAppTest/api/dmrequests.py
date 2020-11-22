@@ -2,7 +2,6 @@ from api.channel import Channel
 from datetime import date
 from api.base import *
 from __future__ import annotations
-import datetime
 
 
 class DMRequest(ToDictable):

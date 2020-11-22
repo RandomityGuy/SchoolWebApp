@@ -35,6 +35,25 @@ JSON Response:
 }
 ```
 
+### `GET /api/channels/<channel>`
+
+Gets a specific channel
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT |
+| ----- | ---- | -------------------- | -------- | ------- |
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+{
+    "flags": int // The flags of the channel
+    "id": int // The id of the channel
+    "name: str // The name of the channel
+}
+```
+
 ### `GET /api/channels/<channel>/messages`
 
 Gets a list of messages in the specified channel.

@@ -64,3 +64,20 @@ class User(ToDictable):
             res = cursor.fetchone()
             user = User(res[0], res[1], res[3], res[4], f"/users/{userid}/avatar")
             return user
+
+    @staticmethod
+    def modify_user(userid: int, username: str = None, permissions: int = None, studentclass: str = None):
+        """Modifies a user's properties
+
+        Args:
+            userid (int): The user id whose properties have to be changed
+            username (str, optional): The new username. Defaults to None.
+            permissions (int, optional): The new permissions. Defaults to None.
+        """
+        if username != None:
+            cursor.execute("UPDATE chatusers SET username=%s WHERE id=%s;", (username, userid))
+        if permissions != None:
+            cursor.execute("UPDATE chatusers SET permissions=%s WHERE id=%s;", (permissions, userid))
+        if studentclass != None:
+            cursor.execute("UPDATE chatusers SET class=%s WHERE id=%s;", (studentclass, userid))
+        db.commit()

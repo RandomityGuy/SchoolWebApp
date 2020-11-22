@@ -4,10 +4,10 @@ from api.permissions import Permissions
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
 from flask.wrappers import Response
 from utils.QueryList import QueryList
+from werkzeug.datastructures import Headers
 
 import mysql.connector
 import jinja2
-from werkzeug.datastructures import Headers
 import snowflake
 import api
 import magic
@@ -117,7 +117,27 @@ def chat(channel):
     return make_response(render_template("chat.html", Model=api.ChatModel(chatmsgs, lastid, channel), userid=loginperson, Channels=api.ChannelModel(channelmodel), Users=api.UserModel(usermodel)))
 
 
-@app.route("api/users/<user>/DM", methods=["GET"])
+@app.route("/api/users/<user>", methods=["GET", "PATCH"])
+def getuser(user):
+    userid = authenticate_user()
+    if request.method == "GET":
+        userdata = api.User.get_user(userid)
+        if userdata == None:
+            return abort(403)
+        return jsonify(userdata.toDict())
+    if request.method == "PATCH":
+        perms = api.Auth.get_permissions(userid)
+        if api.Permissions.has_permission(perms, api.Permissions.CAN_MODIFY_STUDENT):
+            username = request.json.get("username", None)
+            permissions = request.json.get("permissions", None)
+            studentclass = request.json.get("class", None)
+            api.User.modify_user(user, username, permissions, studentclass)
+            return "OK", 200
+        return abort(403)
+    return abort(403)
+
+
+@app.route("/api/users/<user>/DM", methods=["GET"])
 def userDM(user):
     userid = authenticate_user()
     thisuser = api.User.get_user(userid)
@@ -131,7 +151,7 @@ def userDM(user):
         return abort(403)
 
 
-@app.route("api/users/<user>/avatar", methods=["GET", "POST"])
+@app.route("/api/users/<user>/avatar", methods=["GET", "POST"])
 def userAvatar(user):
     if request.method == "GET":
         avatar = api.User.get_avatar(user)

@@ -106,6 +106,49 @@ Response:
 
 ## USERS
 
+### `GET /api/users/<user>`
+
+Gets the basic details of a user.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
+
+```
+{
+    "id": int // The id of the user
+    "username": str // The username of the user
+    "class": str // The class of the user
+    "avatar-url": str // The url to the avatar of the user
+    "permissions": int // The permissions of the user
+}
+```
+
+### `PATCH /api/users/<user>`
+
+Modifies the user details.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Post Data:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| username | str | The new username | No | None |
+| class | str | The new class | No | None |
+| permissions | int | The new permissions | No | None |
+
+Response
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
 ### `GET /api/users/<user>/DM`
 
 Creates a DM with the specified user.

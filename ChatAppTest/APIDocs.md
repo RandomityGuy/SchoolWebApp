@@ -82,6 +82,7 @@ JSON Response:
             "messages": {
                 "content": str // The message content
                 "id": int // The same id of the message
+                "attachment": int // The id of the attachment (if exists)
             }...
         }
     ]
@@ -121,6 +122,63 @@ Response:
 | STATUS CODE | RESPONSE |
 |-------------|----------|
 | 200 | OK |
+| 403 | Unauthorized |
+
+### `POST /api/channels/<channel>/messages`
+
+Send a chat message.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Post Data:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| message | string | The message | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `POST /api/channels/<channel>/messages/attachment`
+
+Send a chat message with attachment.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+| file-name | str | The filename of the attachemnt | Yes | None |
+
+Post Data:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| attachment | blob | The attachment | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `GET /chat/messages/<id>`
+
+Gets an attachment linked with the id.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | The attachment data |
+| 404 | Attachment not found |
 | 403 | Unauthorized |
 
 ## USERS

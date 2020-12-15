@@ -100,9 +100,48 @@ def send_chat_message(channel):
         for username in api.cursor:
             author = username
             break
-        return jsonify(id=id, authorname=author, authorid=userid, content=msg)
+        return "OK"
     else:
         abort(403)
+
+
+@app.route("/api/channels/<channel>/messages/attachment", methods=["POST"])
+def send_chat_message(channel):
+    userid = authenticate_user()
+
+    canAccessThisChannel = api.Channel.validate_access(channel, userid)
+    if not canAccessThisChannel:
+        abort(403)
+
+    if api.Channel.send_message(channel, userid, "", request.data, request.args.get("file-name")):
+        api.cursor.execute(f"SELECT Username FROM ChatUsers WHERE Id = {userid};")
+        author = ""
+        for username in api.cursor:
+            author = username
+            break
+        return "OK"
+    else:
+        abort(403)
+
+
+@app.route("/chat/attachments/<id>", methods=["GET"])
+def get_attachment(id):
+    userid = authenticate_user()
+
+    attachment = api.Channel.get_attachment(id)
+
+    if attachment == None:
+        return abort(404)
+
+    resp = Response(attachment.attachment)
+    ext = attachment.name.split(".")[-1]
+    if ext == "jpg":
+        resp["Content-Type"] = "image/jpeg"
+    elif ext == "png":
+        resp["Content-Type"] = "image/png"
+    else:
+        resp["Content-Type"] = "application/octet-stream"
+    return resp
 
 
 @app.route("/channels/<channel>/chat", methods=["GET"])

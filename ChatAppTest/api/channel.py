@@ -38,12 +38,13 @@ class ChatMessageGroup(ToDictable):
 
 
 class ChatMessage(ToDictable):
-    def __init__(self, id, content):
+    def __init__(self, id, content, attachment):
         self.id = id
         self.content = content
+        self.attachment = attachment
 
     def toDict(self):
-        return {"id": self.id, "content": self.content}
+        return {"id": self.id, "content": self.content, "attachment": self.attachment}
 
 
 class ChatAuthor(ToDictable):
@@ -266,13 +267,15 @@ class Channel(ToDictable):
         return retlist
 
     @staticmethod
-    def send_message(channel: int, userid: int, msg: str) -> bool:
+    def send_message(channel: int, userid: int, msg: str, attachment=None, attachment_name: str = None) -> bool:
         """Sends a message to a given channel from the user
 
         Args:
             channel (int): The channel id
             userid (int): The user sending the message
             msg (str): The message
+            attachment: (optional) The attachment data
+            attachment_name (str): (optional) The attachment filename
 
         Returns:
             bool: True if success
@@ -281,7 +284,13 @@ class Channel(ToDictable):
         canAccessThisChannel = Channel.validate_access(channel, userid)
         if not canAccessThisChannel:
             return False
-        cursor.execute("INSERT INTO ChatMessages VALUES(%s,%s,%s,%s);", (id, userid, msg, channel))
+
+        attachment_id = None
+        if attachment != None:
+            attachment_id = snowflakegen.__next__()
+            cursor.execute("INSERT INTO attachments VALUES(%s,%s,%s);", (attachment_id, attachment, attachment_name))
+
+        cursor.execute("INSERT INTO ChatMessages VALUES(%s,%s,%s,%s,%s);", (id, userid, msg, channel, attachment_id))
         db.commit()
         return True
 
@@ -301,14 +310,31 @@ class Channel(ToDictable):
         if lim > 100:
             lim = 100
         cursor.execute(
-            "SELECT ChatMessages.Id,ChatUsers.Id,Username,Content FROM ChatMessages,ChatUsers WHERE (ChatMessages.User = ChatUsers.Id && ChatMessages.Id > %s && ChatMessages.Channel = %s ) ORDER BY ChatMessages.Id ASC LIMIT %s;",
+            "SELECT ChatMessages.Id,ChatUsers.Id,Username,Content,attachment FROM ChatMessages,ChatUsers WHERE (ChatMessages.User = ChatUsers.Id && ChatMessages.Id > %s && ChatMessages.Channel = %s ) ORDER BY ChatMessages.Id ASC LIMIT %s;",
             (after, channel, lim),
         )
         retlist = []
-        for (id, userid, username, content) in cursor:
-            retlist.append(ChatMessageGroup(id, ChatAuthor(userid, username, f"/users/{userid}/avatar"), [ChatMessage(id, content)]))
+        for (id, userid, username, content, attachment) in cursor:
+            retlist.append(ChatMessageGroup(id, ChatAuthor(userid, username, f"/users/{userid}/avatar"), [ChatMessage(id, content, attachment)]))
 
         return retlist
+
+    @staticmethod
+    def get_attachment(attachmentid: int) -> Attachment:
+        """Gets the attachment for the attachment id
+
+        Args:
+            attachmentid (int): The attachment id
+
+        Returns:
+            Attachment: The attachment if found
+        """
+        cursor.execute("SELECT id, file, filename FROM attachments WHERE id = %s;", (attachmentid,))
+        if cursor.rowcount == 0:
+            return None
+        res = cursor.fetchone()
+        a = Attachment(res[0], res[1], res[2])
+        return a
 
 
 class UserModel(ToDictable):
@@ -334,4 +360,17 @@ class ChannelModel(ToDictable):
         for m in self.channels:
             L.append(m.toDict())
         d["channels"] = L
+        return d
+
+
+class Attachment(ToDictable):
+    def __init__(self, id, attachment, name):
+        self.attachment = attachment
+        self.name = name
+        self.id = id
+
+    def toDict(self):
+        d = {}
+        d["name"] = self.name
+        d["link"] = f"/chat/attachments/{id}"
         return d

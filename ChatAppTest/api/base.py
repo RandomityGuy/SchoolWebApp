@@ -1,9 +1,19 @@
 import mysql.connector
 import snowflake
+import json
 
-db = mysql.connector.connect(user="root", password="qwertyuiop", database="chatdb")
+user = None
+host = None
+pwd = None
+
+with open("config.json") as f:
+    config = json.loads(f.read())
+    user = config["user"]
+    host = config["host"]
+    pwd = config["pwd"]
+
+db = mysql.connector.connect(host=host, user=user, password=pwd, database="chatdb")
 cursor = db.cursor(buffered=True)
-# type: db.cursor
 snowflakegen = snowflake.generator(1, 1)
 
 

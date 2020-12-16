@@ -705,6 +705,90 @@ Response:
 | 200 | OK |
 | 403 | Unauthorized |
 
-```
+## VIDEOS
+
+### `GET /api/videos/<class>/<path>`
+
+Gets a list of videos located at the path.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Response:
 
 ```
+[
+    "videos": [
+        {
+            "id": int // the video id
+            "name": str // the video name
+            "class": str // the class
+            "link": str // the link to the video
+            "path": str // the path to the video
+        }...
+    ]
+
+    "folders": list<str> // the list of folders accessible from the current path
+}
+```
+
+### `POST /api/videos/<class>/<path>`
+
+Stores the video details to the specified path.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| name | str | The name of the video | Yes | None |
+| link | str | The link to the video | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `PATCH /api/videos/<class>/<path>`
+
+Modifies the video details
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+| id | int | The id of the video | Yes | none |
+
+JSON Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| name | str | The new name of the video | Yes | None |
+| link | str | The new link to the video | Yes | None |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `DELETE /api/videos/<class>/<path>`
+
+Deletes a video detail
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+| id | int | The id of the video | Yes | none |
+
+Response:
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |

@@ -1,3 +1,4 @@
+from api.user import User
 from api.permissions import Permissions
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
 from flask.wrappers import Response
@@ -385,31 +386,31 @@ def assignmentinfomark(assignmentid, submissionid):
 @app.route("/api/classes", methods=["GET"])
 def getclasses(classname):
     userid = authenticate_user()
-    return jsonify(api.Class.get_classes())
+    return jsonify(api.StudentClass.get_classes())
 
 
 @app.route("/api/class/<classname>", methods=["GET"])
 def getclassmembers(classname):
     userid = authenticate_user()
-    return jsonify(QueryList(api.Class.get_everyone_for_class(classname)).Select(lambda x: x.toDict()).ToList())
+    return jsonify(QueryList(api.StudentClass.get_everyone_for_class(classname)).Select(lambda x: x.toDict()).ToList())
 
 
 @app.route("/api/class/<classname>/students", methods=["GET"])
 def getclassstudents(classname):
     userid = authenticate_user()
-    return jsonify(QueryList(api.Class.get_students_for_class(classname)).Select(lambda x: x.toDict()).ToList())
+    return jsonify(QueryList(api.StudentClass.get_students_for_class(classname)).Select(lambda x: x.toDict()).ToList())
 
 
 @app.route("/api/class/<classname>/teachers", methods=["GET"])
 def getclassteachers(classname):
     userid = authenticate_user()
-    return jsonify(QueryList(api.Class.get_class_teachers(classname)).Select(lambda x: x.toDict()).ToList())
+    return jsonify(QueryList(api.StudentClass.get_class_teachers(classname)).Select(lambda x: x.toDict()).ToList())
 
 
 @app.route("/api/staff", methods=["GET"])
 def getstaff(classname):
     userid = authenticate_user()
-    return jsonify(QueryList(api.Class.get_staff()).Select(lambda x: x.toDict()).ToList())
+    return jsonify(QueryList(api.StudentClass.get_staff()).Select(lambda x: x.toDict()).ToList())
 
 
 @app.route("/api/request/<requestid>", methods=["GET"])
@@ -476,6 +477,41 @@ def accept_dm(requestid):
         return "OK", 200
 
     return abort(403)
+
+
+@app.route("/api/videos/<studentclass>/<path:varargs>", methods=["GET", "POST", "PATCH", "DELETE"])
+def videos(studentclass, varargs=""):
+    userid = authenticate_user()
+    userdata = User.get_user(userid)
+    if request.method == "GET":
+        if userdata.studentclass != studentclass and not api.Permissions.has_permission(userdata.permissions, api.Permissions.MANAGE_VIDEO):
+            return abort(403)
+
+        videos = QueryList(api.Videos.get_videos_in_folder(studentclass, varargs)).Select(lambda x: x.toDict()).ToList()
+        folders = api.Videos.get_folders(studentclass, varargs)
+        ret = {"videos": videos, "folders": folders}
+        return jsonify(ret)
+
+    if request.method == "POST":
+        if not api.Permissions.has_permission(userdata.permissions, api.Permissions.MANAGE_VIDEO):
+            return abort(403)
+
+        api.Videos.store_video(request.json.get("name"), request.json.get("link"), studentclass, varargs)
+        return "OK", 200
+
+    if request.method == "PATCH":
+        if not api.Permissions.has_permission(userdata.permissions, api.Permissions.MANAGE_VIDEO):
+            return abort(403)
+
+        api.Videos.modify_video(request.args.get("id"), request.json.get("name"), request.json.get("link"), studentclass, varargs)
+        return "OK", 200
+
+    if request.method == "DELETE":
+        if not api.Permissions.has_permission(userdata.permissions, api.Permissions.MANAGE_VIDEO):
+            return abort(403)
+
+        api.Videos.delete_video(request.args.get("id"))
+        return "OK", 200
 
 
 @app.route("/")

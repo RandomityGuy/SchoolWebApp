@@ -1,6 +1,6 @@
+from __future__ import annotations
 from datetime import date
 from api.base import *
-from __future__ import annotations
 import datetime
 
 

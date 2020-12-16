@@ -3,7 +3,7 @@ from api.user import User
 from api.base import *
 
 
-class Class:
+class StudentClass:
     def get_everyone_for_class(classname: str) -> list[User]:
         """Gets a list of members for a given class
 

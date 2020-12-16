@@ -1,7 +1,7 @@
+from __future__ import annotations
 from api.channel import Channel
 from datetime import date
 from api.base import *
-from __future__ import annotations
 
 
 class DMRequest(ToDictable):

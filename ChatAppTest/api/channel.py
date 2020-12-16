@@ -1,8 +1,7 @@
+from __future__ import annotations
 from api.permissions import Permissions
-from api.dmrequests import DMRequest
 from api.auth import Auth
 from api.base import *
-from __future__ import annotations
 
 
 class ChatModel(ToDictable):
@@ -227,6 +226,22 @@ class Channel(ToDictable):
         return retlist[0]
 
     @staticmethod
+    def dm_req_exists(to_user: int, by_user: int) -> bool:
+        """Check if a DM request between two users exists and/or it isnt expired
+
+        Args:
+            to_user (int): The user to which the request is to
+            by_user (int): The user requesting
+
+        Returns:
+            bool: True if DM exists and it isnt expired.
+        """
+        cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
+        if cursor.rowcount == 0:
+            return False
+        return True
+
+    @staticmethod
     def is_expired(channelid: int) -> bool:
         """Checks if a given channel is expired because of expired DM request
 
@@ -246,7 +261,7 @@ class Channel(ToDictable):
             members = Channel.get_user_list(channelid)
             if len(members) != 2:
                 raise Exception("DM requested channel cannot have member count other than 2")
-            return (not DMRequest.dm_exists(members[0].id, members[1].id)) and (not DMRequest.dm_exists(members[1].id, members[0].id))
+            return (not Channel.dm_req_exists(members[0].id, members[1].id)) and (not Channel.dm_req_exists(members[1].id, members[0].id))
         else:
             return False
 

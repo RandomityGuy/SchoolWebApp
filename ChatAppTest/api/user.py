@@ -1,5 +1,5 @@
-from api.base import *
 from __future__ import annotations
+from api.base import *
 
 
 class User(ToDictable):

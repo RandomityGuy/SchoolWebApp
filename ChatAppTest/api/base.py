@@ -10,7 +10,7 @@ with open("config.json") as f:
     config = json.loads(f.read())
     user = config["user"]
     host = config["host"]
-    pwd = config["pwd"]
+    pwd = config["password"]
 
 db = mysql.connector.connect(host=host, user=user, password=pwd, database="chatdb")
 cursor = db.cursor(buffered=True)

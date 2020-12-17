@@ -162,7 +162,17 @@ def chat(channel):
     return make_response(render_template("chat.html", Model=api.ChatModel(chatmsgs, lastid, channel), userid=loginperson, Channels=api.ChannelModel(channelmodel), Users=api.UserModel(usermodel)))
 
 
-@app.route("/api/users/<user>", methods=["GET", "PATCH"])
+@app.route("/api/users/register", methods=["POST"])
+def register():
+    userid = authenticate_user()
+    perms = api.Auth.get_permissions(userid)
+    if api.Permissions.has_permission(perms, api.Permissions.MANAGE_USER):
+        api.Auth.register(request.json.get("username"), request.json.get("password"), int(request.json.get("permissions", 0)))
+        return "OK", 200
+    return abort(403)
+
+
+@app.route("/api/users/<user>", methods=["GET", "PATCH", "DELETE"])
 def getuser(user):
     userid = authenticate_user()
     if request.method == "GET":
@@ -170,15 +180,26 @@ def getuser(user):
         if userdata == None:
             return abort(403)
         return jsonify(userdata.toDict())
+
     if request.method == "PATCH":
         perms = api.Auth.get_permissions(userid)
-        if api.Permissions.has_permission(perms, api.Permissions.CAN_MODIFY_STUDENT):
+        userperms = api.Auth.get_permissions(user)
+        if api.Permissions.has_permission(perms, api.Permissions.CAN_MODIFY_STUDENT) and perms > userperms:
             username = request.json.get("username", None)
             permissions = request.json.get("permissions", None)
             studentclass = request.json.get("class", None)
             api.User.modify_user(user, username, permissions, studentclass)
             return "OK", 200
         return abort(403)
+
+    if request.method == "DELETE":
+        perms = api.Auth.get_permissions(userid)
+        userperms = api.Auth.get_permissions(user)
+        if api.Permissions.has_permission(perms, api.Permissions.CAN_MODIFY_STUDENT) and perms > userperms:
+            api.User.delete_user(user)
+            return "OK", 200
+        return abort(403)
+
     return abort(403)
 
 

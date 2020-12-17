@@ -226,6 +226,43 @@ Response
 | 200 | OK |
 | 403 | Unauthorized |
 
+### `DELETE /api/users/<user>
+
+Deletes a user.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Response
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `POST /api/users/register`
+
+Register a user.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+JSON Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| username | str | The username of the user | Yes | None |
+| password | str | The password of the user | Yes | None |
+| permissions | int | The permissions flags of the user | No | 0 |
+
+Response
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
 ### `GET /api/users/<user>/DM`
 
 Creates a DM with the specified user.

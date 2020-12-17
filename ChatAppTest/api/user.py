@@ -81,3 +81,13 @@ class User(ToDictable):
         if studentclass != None:
             cursor.execute("UPDATE chatusers SET class=%s WHERE id=%s;", (studentclass, userid))
         db.commit()
+
+    @staticmethod
+    def delete_user(userid: int):
+        """Deletes a user by its id
+
+        Args:
+            userid (int): The user id
+        """
+        cursor.execute("DELETE FROM chatusers WHERE id=%s;", userid)
+        db.commit()

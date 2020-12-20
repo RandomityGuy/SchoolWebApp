@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+}
+body {
+  /* --back: #0a0a0a;
+  --fore: #020202; */
+
+  --fore: #0a0a0a;
+  --back: #020202;
+
+  --accent: #79d2f1;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.background {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  background-color: var(--back);
+}
+
+.middle-box {
+  position: fixed;
+  height: 80%;
+  width: 60%;
+  background-color: var(--fore);
+  left: 27%;
+  top: 10%;
+  transition: 1s ease-in-out;
+}
+
+.logo {
+  background: url('../assets/logo.png');
+  background-size: 100% 100%;
+  position: fixed;
+  height: 40%;
+  width: 19.4%;
+  left: 15%;
+  top: 28%;
+  transition: 1s ease-in-out;
+}
+#animbox {
+  transition: 0.5s ease-in-out;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  opacity: 1;
+}
+
+.title {
+  position: relative;
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+  left: 22%;
+  top: 7%;
+}
+
+.details {
+  color: var(--accent);
+  position: relative;
+  font-size: 2rem;
+  font-weight: 400;
+  top: 20%;
+  left: 30%;
+}
+
+.details-list {
+  color: white;
+  position: relative;
+  padding: 1%;
+  font-size: 1.5rem;
+  font-weight: 300;
+  top: 30%;
+  left: 20%;
+}
+.b {
+  top: 35%;
+  font-weight: 700;
+}
+
+.cont {
+  position: fixed;
+  height: 6%;
+  width: 8%;
+  left: 46%;
+  top: 81%;
+  color: white;
+  background-color: var(--fore);
+  font-size: 1rem;
+  border: 0.5px solid white;
+  font-weight: 400;
+  transition: 0.25s ease-in-out;
+}
+
+.logo-anim {
+  position: fixed;
+  width: 9.7%;
+  height: 20%;
+  left: 45.5%;
+  top: 20%;
+}
+
+.middle-box-anim {
+  position: fixed;
+  width: 40%;
+  height: 70%;
+  background-color: var(--fore);
+  left: 30%;
+  top: 15%;
+}
+
+#form {
+  transition: 1s ease-in-out;
+  opacity: 0;
+  transition-delay: 1s;
+}
+input.input {
+  position: fixed;
+  top: 50%;
+  height: 6%;
+  left: 35%;
+  width: 30%;
+  background-color: var(--fore);
+  color: white;
+  padding-left: 1%;
+  font-size: 1rem;
+  border: 0;
+  border-bottom: 1px solid rgb(121, 210, 241, 0);
+  transition: 0.25s ease-in-out;
+  font-family: 'Montserrat', sans-serif;
+}
+
+#pass {
+  top: 65%;
+}
+#signIn {
+  position: fixed;
+  height: 6%;
+  width: 8%;
+  left: 46%;
+  top: 75%;
+  color: white;
+  background-color: var(--fore);
+  font-size: 1rem;
+  border: 0.5px solid white;
+  font-weight: 400;
+  transition: 0.25s ease-in-out;
+}
+
+input:focus {
+  border-bottom: 1px solid rgb(121, 210, 241, 1);
+}
+
+#signIn:hover,
+#signIn:focus,
+.cont:hover,
+.cont:focus {
+  border: 0.5px solid var(--accent);
+  color: var(--accent);
+}

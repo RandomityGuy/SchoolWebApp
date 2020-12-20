@@ -102,6 +102,9 @@ body {
   height: 20%;
   left: 45.5%;
   top: 20%;
+  background: url('../assets/logo.png');
+  background-size: 100% 100%;
+  transition: 1s ease-in-out;
 }
 
 .middle-box-anim {
@@ -111,12 +114,12 @@ body {
   background-color: var(--fore);
   left: 30%;
   top: 15%;
+  transition: 1s ease-in-out;
 }
 
 #form {
   transition: 1s ease-in-out;
   opacity: 0;
-  transition-delay: 1s;
 }
 input.input {
   position: fixed;
@@ -151,8 +154,24 @@ input.input {
   transition: 0.25s ease-in-out;
 }
 
+#back {
+  position: fixed;
+  left: 32%;
+  top: 19%;
+  color: white;
+  font-size: 1rem;
+  font-weight: 400;
+  transition: 0.25s ease-in-out;
+}
+
 input:focus {
   border-bottom: 1px solid rgb(121, 210, 241, 1);
+}
+
+#back:hover,
+#back:focus {
+  color: var(--accent);
+  cursor: pointer;
 }
 
 #signIn:hover,

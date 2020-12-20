@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="background"></div>
-    <div class="middle-box" id= "middleBox" onclick="anim()">
+    <div class="middle-box" id= "middleBox">
         <div id="animbox">
             <div class="title">Bright School App</div>
             <div class="details">Epic webapp with a lot of stuff</div>
@@ -16,9 +16,10 @@
             <div class="details-list">Announcements</div>
             <div class="details-list">Assignments</div>
             <div class="details-list b"><b>and more Epicness</b></div>
-            <button onclick="anim()" class="cont">Continue</button>
+            <button onclick="signIN()" class="cont">Continue</button>
         </div>
     <form action="" id="form">
+            <div id="back" onclick="notSignIN()"> Back </div>
             <input type="text" placeholder="Username" id='username' class='input'>
             <br>
             <input type="password" placeholder="Password" id='pass' class='input'>

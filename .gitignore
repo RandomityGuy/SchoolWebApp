@@ -19,3 +19,7 @@ x84/
 [Ll]og/
 [Llogs/
 .vs/
+.vscode
+node_modules
+__pycache__
+*.code-workspace

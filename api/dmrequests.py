@@ -52,7 +52,7 @@ class DMRequest(ToDictable):
             int: The DM request id
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATEADD(d,%s,CURDATE()));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
+        cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
         db.commit()
         return id
 

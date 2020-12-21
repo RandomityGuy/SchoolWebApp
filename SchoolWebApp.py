@@ -275,8 +275,20 @@ def auth():
         token = api.Auth.login(username, pwd)
         resp = {"token": token}
         return jsonify(resp)
-    except Exception:
-        abort(403)
+    except Exception as e:
+        return {"error": str(e)}, 403;
+
+@app.route("/api/authorizetoken", methods=["POST"])
+def authtoken():
+    token = request.json.get("token")
+
+    try:
+        if (api.Auth.authorize(token)):
+            return "OK", 200;
+        else:
+            return "EXPIRED", 403;
+    except Exception as e:
+        return {"error": str(e)}, 403;
 
 
 @app.route("/api/announcements", methods=["GET", "POST"])

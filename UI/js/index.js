@@ -3,11 +3,18 @@
 
     const login_continue = document.querySelector('#login_continue');
     const login_back = document.querySelector('#back');
+    const username_text = document.querySelector("#username_text");
+    const password_text = document.querySelector("#pass");
+    const sign_in_button = document.querySelector("#signIn");
     login_continue.addEventListener('click', (e) => {
         sign_in();
+        attempt_auto_sign_in();
     });
     login_back.addEventListener('click', (e) => {
         not_sign_in();
+    });
+    sign_in_button.addEventListener('click', (e) => {
+        attempt_sign_in();
     });
     function sign_in() {
         document.getElementById('middleBox').classList.toggle('middle-box-anim');
@@ -28,6 +35,42 @@
         document.getElementById('animbox').style.transitionDelay = "0.7s";
         document.getElementById('form').style.pointerEvents = "none";
         document.getElementById('animbox').style.pointerEvents = "auto";
+    }
+    function attempt_auto_sign_in() {
+        let tok = localStorage.getItem('token');
+        let body = { token: tok };
+        if (tok !== null) {
+            fetch('./api/authorizetoken', {
+                method: "POST",
+                body: JSON.stringify(body),
+                headers: { 'Content-Type': 'application/json' },
+            }).then((e) => {
+                if (e.status != 403) {
+                    on_sign_in();
+                }
+            });
+        }
+    }
+    function attempt_sign_in() {
+        let username = username_text.value;
+        let password = password_text.value;
+        let body = { username: username, pwd: password };
+        fetch('./api/authorize', {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' },
+        }).then((e) => {
+            if (e.status != 403) {
+                e.json().then(resp => {
+                    localStorage.setItem('token', resp.token);
+                });
+                on_sign_in();
+            }
+        });
+    }
+    function on_sign_in() {
+        console.log("auto sign in");
+        // Do whatever you want here after sign in
     }
 
 }());

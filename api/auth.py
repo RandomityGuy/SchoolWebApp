@@ -25,7 +25,7 @@ class Auth:
 
         # !!! WARNING : SEND A HASHED PASSWORD FROM THE SITE, HASH THE PASSWORD WITHIN THE BROWSER AND THEN SEND IT HERE
 
-        cursor.execute("SELECT id,Username,password FROM chatusers WHERE Username = %s;", username)
+        cursor.execute("SELECT id,Username,password FROM chatusers WHERE Username = %s;", (username,))
 
         if cursor.rowcount == 0:
             raise Exception("Invalid username")
@@ -35,13 +35,13 @@ class Auth:
         if data[2] == None:
             raise Exception("No password set")
 
-        if bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd).digest()), data[2]):
-            cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && user=%s);", data[0])
+        if bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd.encode('utf-8')).digest()), data[2].encode('utf-8')):
+            cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && user=%s);", (data[0],))
             if cursor.rowcount == 0:
                 # Create new token
                 token = secrets.token_hex(128)
                 id = snowflakegen.__next__()
-                cursor.execute("INSERT INTO tokens VALUES(%s,%s,DATEADD(m,1,CURDATE()),%s);", (id, token, data[1]))
+                cursor.execute("INSERT INTO tokens VALUES(%s,%s,DATE_ADD(CURDATE(), INTERVAL 1 MONTH),%s);", (id, token, data[0]))
                 db.commit()
                 return token
             else:
@@ -63,9 +63,9 @@ class Auth:
             str: The token if sucess
         """
         id = snowflakegen.__next__()
-        hash = bcrypt.hashpw(base64.b64encode(hashlib.sha256(pwd).digest()), bcrypt.gensalt())
+        hash = bcrypt.hashpw(base64.b64encode(hashlib.sha256(pwd.encode('utf-8')).digest()), bcrypt.gensalt())
 
-        cursor.execute("INSERT INTO chatdb VALUES(%s,%s,%s,%s);", (id, username, hash, permissions))
+        cursor.execute("INSERT INTO chatusers VALUES(%s,%s,%s,%s,NULL,NULL);", (id, username, hash, permissions))
         db.commit()
 
         return Auth.login(username, pwd)

@@ -217,7 +217,7 @@ CREATE TABLE `chatusers` (
 
 LOCK TABLES `chatusers` WRITE;
 /*!40000 ALTER TABLE `chatusers` DISABLE KEYS */;
-INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL,'XII-A',NULL),(2,'TestUser',NULL,NULL,'XII-A',NULL);
+INSERT INTO `chatusers` VALUES (1,'Krishiv',NULL,NULL,'XII-A',NULL),(2,'TestUser',NULL,NULL,'XII-A',NULL),(1952670716730150912,'ADMIN','$2b$12$GLNzXgFbYCicjXa8y2r8QunP5Hiud3/zoe5NAr5LdkvyAYcBvdCWK',511,NULL,NULL);
 /*!40000 ALTER TABLE `chatusers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -268,8 +268,34 @@ CREATE TABLE `tokens` (
 
 LOCK TABLES `tokens` WRITE;
 /*!40000 ALTER TABLE `tokens` DISABLE KEYS */;
-INSERT INTO `tokens` VALUES (1,'abc','2020-12-24',1);
+INSERT INTO `tokens` VALUES (1,'abc','2020-12-24',1),(1952674035137646592,'4d0b6cf2387d19f6ea17d68378f470e87b8b04ad5e678d43a2b074b56d8d2a9e3444ef78f89a47317db74af01eebce1f5e021bcbe8ab67e67dcb0c5b162c1902f949c82afd9abcc8b899b855321236b12fa3179d32d68d82325e82bfd151e93869d304b0b2d6bf5c817c09d7a54e63335ad770160a4403548b3fadc6861222d8','2021-01-21',1952670716730150912);
 /*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `videos`
+--
+
+DROP TABLE IF EXISTS `videos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `videos` (
+  `id` bigint DEFAULT NULL,
+  `class` varchar(32) DEFAULT NULL,
+  `name` varchar(128) DEFAULT NULL,
+  `link` varchar(256) DEFAULT NULL,
+  `path` varchar(512) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `videos`
+--
+
+LOCK TABLES `videos` WRITE;
+/*!40000 ALTER TABLE `videos` DISABLE KEYS */;
+INSERT INTO `videos` VALUES (1,'a','abc','abc',''),(2,'b','def','abc','/folder1'),(3,'b','ghi','abc','/folder1'),(4,'b','jkl','abc','/folder2'),(5,'b','mno','abc','/folder1/folder2'),(6,'b','pqr','abc','/folder1/folder3'),(7,'b','stu','abc','/folder1/folder2'),(8,'b','vwz','abc','/folder1/folder2/folder3');
+/*!40000 ALTER TABLE `videos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -281,4 +307,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-12-15 22:47:35
+-- Dump completed on 2020-12-21 10:59:35

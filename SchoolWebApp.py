@@ -1,6 +1,6 @@
 from api.user import User
 from api.permissions import Permissions
-from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect
+from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect, send_from_directory
 from flask.wrappers import Response
 from utils.QueryList import QueryList
 
@@ -9,8 +9,35 @@ import magic
 import datetime
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="ui")
 
+
+## FRONTEND ROUTES
+
+@app.route('/js/<path:path>')
+def send_js(path):
+    return send_from_directory('ui/js', path)
+
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('ui/css', path)
+
+@app.route('/assets/<path:path>')
+def send_assets(path):
+    return send_from_directory('ui/assets', path)
+
+## FRONTEND
+
+@app.route('/')
+def index():
+    return render_template("index.html");
+
+
+
+
+
+
+## API
 
 def authenticate_user() -> int:
     token = request.args.get("token")
@@ -107,7 +134,7 @@ def send_chat_message(channel):
 
 
 @app.route("/api/channels/<channel>/messages/attachment", methods=["POST"])
-def send_chat_message(channel):
+def send_chat_message_attachment(channel):
     userid = authenticate_user()
 
     canAccessThisChannel = api.Channel.validate_access(channel, userid)
@@ -358,7 +385,7 @@ def assignmentattachment(assignmentid):
 
 
 @app.route("/api/assignment/<assignmentid>/submissions/<submissionid>/file", methods=["GET"])
-def assignmentinfo(assignmentid, submissionid):
+def get_assignment_file(assignmentid, submissionid):
     userid = authenticate_user()
     user = api.User.get_user(userid)
     assignment = api.Assignment.get_assignment(assignmentid)
@@ -376,7 +403,7 @@ def assignmentinfo(assignmentid, submissionid):
 
 
 @app.route("/api/assignment/<assignmentid>/submissions", methods=["GET"])
-def assignmentinfo(assignmentid):
+def get_assignment_submissions(assignmentid):
     userid = authenticate_user()
     user = api.User.get_user(userid)
     assignment = api.Assignment.get_assignment(assignmentid)
@@ -446,7 +473,7 @@ def get_dm_request(requestid):
 
 
 @app.route("/api/requests", methods=["GET", "POST"])
-def get_dm_requests():
+def dm_requests():
     userid = authenticate_user()
     if request.method == "GET":
         reqs = QueryList(api.DMRequest.get_dm_requests(userid)).Select(lambda x: x.toDict()).ToList()
@@ -463,7 +490,7 @@ def get_dm_requests():
 
 
 @app.route("/api/requests/sent", methods=["GET"])
-def get_dm_requests():
+def get_sent_dm_requests():
     userid = authenticate_user()
     if request.method == "GET":
         reqs = QueryList(api.DMRequest.get_sent_dm_requests(userid)).Select(lambda x: x.toDict()).ToList()
@@ -487,7 +514,7 @@ def accept_dm(requestid):
 
 
 @app.route("/api/requests/<requestid>/reject", methods=["GET"])
-def accept_dm(requestid):
+def reject_dm(requestid):
     userid = authenticate_user()
     req = api.DMRequest.get_dm_request(requestid)
     if req == None:
@@ -533,8 +560,3 @@ def videos(studentclass, varargs=""):
 
         api.Videos.delete_video(request.args.get("id"))
         return "OK", 200
-
-
-@app.route("/")
-def login():
-    return render_template("login.html")

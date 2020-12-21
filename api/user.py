@@ -89,5 +89,35 @@ class User(ToDictable):
         Args:
             userid (int): The user id
         """
-        cursor.execute("DELETE FROM chatusers WHERE id=%s;", userid)
+        cursor.execute("DELETE FROM chatusers WHERE id=%s;", (userid,))
         db.commit()
+
+    @staticmethod
+    def get_details(userid: int) -> str:
+        """Gets the JSON user details for a user
+
+        Args:
+            userid (int): the user id
+
+        Returns:
+            str: the JSON details
+        """
+        cursor.execute("SELECT data FROM userdetails WHERE userid=%s;",(userid,));
+        if cursor.rowcount == 0:
+            return "{}";
+        return cursor.fetchone()[0];
+
+    @staticmethod
+    def set_details(userid: int, details: str):
+        """Sets the JSON user details for a user
+
+        Args:
+            userid (int): The user id
+            details (str): the JSON user details
+        """
+        cursor.execute("SELECT 1 FROM userdetails WHERE userid=%s;",(userid,));
+        if cursor.rowcount == 0:
+            cursor.execute("INSERT INTO userdetails VALUES(%s,%s,%s);",(snowflakegen.__next__(),userid,details));
+        else:
+            cursor.execute("UPDATE userdetails SET details=%s WHERE userid=%s;",(details,userid));
+        db.commit();

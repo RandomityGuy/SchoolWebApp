@@ -300,10 +300,47 @@ Query String Parameters:
 | FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
 |-------|------|-------------|----------|--------|
 | token | str | Authentication token | Yes | None |
+
 Post Data:
 | FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
 |-------|------|-------------|----------|--------|
 | data | blob | The avatar | Yes | None |
+
+Response
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | OK |
+| 403 | Unauthorized |
+
+### `GET /api/users/<user>/details`
+
+Gets miscellaneous details about the user such as details in the diary
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Response
+| STATUS CODE | RESPONSE |
+|-------------|----------|
+| 200 | The JSON details |
+| 403 | Unauthorized |
+
+### `POST /api/users/<user>/details`
+
+Sets additional details of the user.
+
+Query String Parameters:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| token | str | Authentication token | Yes | None |
+
+Post Data:
+| FIELD | TYPE | DESCRIPTION | REQUIRED | DEFAULT|
+|-------|------|-------------|----------|--------|
+| data | json | The details | Yes | None |
+
 Response
 | STATUS CODE | RESPONSE |
 |-------------|----------|

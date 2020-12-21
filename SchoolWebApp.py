@@ -46,7 +46,7 @@ def authenticate_user() -> int:
         return abort(403)
     return userid
 
-
+### CHAT
 @app.route("/api/channels", methods=["GET"])
 def get_channels():
     userid = authenticate_user()
@@ -188,6 +188,7 @@ def chat(channel):
 
     return make_response(render_template("chat.html", Model=api.ChatModel(chatmsgs, lastid, channel), userid=loginperson, Channels=api.ChannelModel(channelmodel), Users=api.UserModel(usermodel)))
 
+### USER
 
 @app.route("/api/users/register", methods=["POST"])
 def register():
@@ -229,6 +230,22 @@ def getuser(user):
 
     return abort(403)
 
+@app.route("/api/users/<user>/details", methods=["GET", "POST"])
+def userDetails(user):
+    userid = authenticate_user()
+    thisuser = api.User.get_user(userid);
+    if (api.Permissions.has_permission(thisuser.permissions,api.Permissions.CLASS_T) or userid == user):
+        if (request.method == "GET"):
+            details = api.User.get_details(user);
+            resp = Response(details);
+            resp.headers["Content-Type"] = "application/json";
+            return resp;
+        if (request.method == "POST"):
+            details = str(request.json);
+            api.User.set_details(user, details);
+            return "OK", 200;
+    return abort(403);
+
 
 @app.route("/api/users/<user>/DM", methods=["GET"])
 def userDM(user):
@@ -265,6 +282,7 @@ def userAvatar(user):
         return "OK", 200
     abort(403)
 
+### AUTH
 
 @app.route("/api/authorize", methods=["POST"])
 def auth():
@@ -290,6 +308,7 @@ def authtoken():
     except Exception as e:
         return {"error": str(e)}, 403;
 
+### ANNOUNCEMENTS
 
 @app.route("/api/announcements", methods=["GET", "POST"])
 def announcements():
@@ -320,6 +339,7 @@ def announcements():
                 return abort(403)
         return abort(403)
 
+### ASSIGNMENTS
 
 @app.route("/api/assignments/<studentclass>", methods=["GET", "POST"])
 def assignments(studentclass):
@@ -442,6 +462,7 @@ def assignmentinfomark(assignmentid, submissionid):
     else:
         return abort(403)
 
+### CLASSES
 
 @app.route("/api/classes", methods=["GET"])
 def getclasses(classname):
@@ -472,6 +493,7 @@ def getstaff(classname):
     userid = authenticate_user()
     return jsonify(QueryList(api.StudentClass.get_staff()).Select(lambda x: x.toDict()).ToList())
 
+### DM REQUESTS
 
 @app.route("/api/request/<requestid>", methods=["GET"])
 def get_dm_request(requestid):
@@ -538,6 +560,7 @@ def reject_dm(requestid):
 
     return abort(403)
 
+### VIDEOS
 
 @app.route("/api/videos/<studentclass>/<path:varargs>", methods=["GET", "POST", "PATCH", "DELETE"])
 def videos(studentclass, varargs=""):

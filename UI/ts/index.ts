@@ -79,5 +79,6 @@ function attempt_sign_in() {
 }
 
 function on_sign_in() {
+    window.location.href = 'home';
     // Do whatever you want here after sign in
 }

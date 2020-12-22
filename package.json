@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "rollup -c"
+    "compile": "rollup -c --environment entry:home & rollup -c --environment entry:index"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "rollup": "^2.33.2",
     "rollup-plugin-multi-entry": "^2.1.0",
+    "rollup-plugin-multi-input": "^1.1.1",
     "rollup-plugin-typescript": "^1.0.1",
     "tslib": "^2.0.3",
     "typescript": "^4.0.5"

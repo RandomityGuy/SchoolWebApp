@@ -1,3 +1,4 @@
+from magic.magic import from_file
 from api.user import User
 from api.permissions import Permissions
 from flask import Flask, render_template, url_for, request, jsonify, make_response, abort, redirect, send_from_directory
@@ -32,7 +33,9 @@ def send_assets(path):
 def index():
     return render_template("index.html");
 
-
+@app.route('/home')
+def home():
+    return render_template("html/home.html");
 
 
 
@@ -203,6 +206,8 @@ def register():
 @app.route("/api/users/<user>", methods=["GET", "PATCH", "DELETE"])
 def getuser(user):
     userid = authenticate_user()
+    if (user == "@me"): 
+        user = userid;
     if request.method == "GET":
         userdata = api.User.get_user(userid)
         if userdata == None:
@@ -260,11 +265,12 @@ def userDM(user):
     else:
         return abort(403)
 
-
 @app.route("/api/users/<user>/avatar", methods=["GET", "POST"])
 def userAvatar(user):
     if request.method == "GET":
         avatar = api.User.get_avatar(user)
+        if (avatar == None):
+            return send_from_directory('ui/assets','logo.png');
         resp = Response(avatar)
         resp.headers["Content-Type"] = magic.from_buffer(avatar)
         return resp

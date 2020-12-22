@@ -278,7 +278,7 @@ class Channel(ToDictable):
         cursor.execute("SELECT chatusers.id, username FROM channelmembers,chatusers WHERE (channelmembers.channelId = %s && channelmembers.userid = chatusers.id);", (channelid,))
         retlist = []
         for (id, name) in cursor:
-            retlist.append(ChatAuthor(id, name, f"/users/{id}/avatar"))
+            retlist.append(ChatAuthor(id, name, f"api/users/{id}/avatar"))
         return retlist
 
     @staticmethod
@@ -330,7 +330,7 @@ class Channel(ToDictable):
         )
         retlist = []
         for (id, userid, username, content, attachment) in cursor:
-            retlist.append(ChatMessageGroup(id, ChatAuthor(userid, username, f"/users/{userid}/avatar"), [ChatMessage(id, content, attachment)]))
+            retlist.append(ChatMessageGroup(id, ChatAuthor(userid, username, f"api/users/{userid}/avatar"), [ChatMessage(id, content, attachment)]))
 
         return retlist
 

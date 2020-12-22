@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  --fore: #0a0a0a;
+  --back: #020202;
+  --accent: #79d2f1;
+  background-color: var(--fore);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.user-info {
+  position: absolute;
+  height: 50%;
+  width: 40%;
+  left: 2%;
+  top: 5%;
+  background-color: var(--back);
+  border-left: 1px solid var(--accent);
+  transition: 0.5s ease-in-out;
+  cursor: pointer;
+}
+
+.avatar {
+  position: relative;
+  height: 80%;
+  width: 40%;
+  top: 10%;
+  left: 5%;
+  background-image: url('../assets/profile2.png');
+  background-size: 100% 100%;
+}
+
+.user-details {
+  position: relative;
+  height: 80%;
+  width: 45%;
+  left: 50%;
+  top: -70%;
+  text-align: center;
+  color: rgba(200, 200, 200, 1);
+  font-size: 1.5rem;
+}
+
+.spaced {
+  margin-bottom: 10%;
+}
+
+.user-info:hover {
+  border-left: 1px solid tomato;
+}
+.divider {
+  position: absolute;
+  height: 30%;
+  width: 0.1%;
+  top: 15%;
+  left: 52.5%;
+  background-color: var(--accent);
+}
+.message {
+  position: absolute;
+  height: 50%;
+  width: 30%;
+  top: 5%;
+  left: 47%;
+  background-color: var(--back);
+}
+
+.chat-image,
+.announce-image,
+.task-image {
+  filter: invert(100%) sepia(9%) saturate(100%) hue-rotate(257deg)
+    brightness(117%) contrast(100%);
+  position: relative;
+  height: 50%;
+  width: 50%;
+  left: 25%;
+  top: 25%;
+  transition: 0.5s ease-in-out;
+}
+
+.message:hover,
+.announcements:hover,
+.assignments,
+.idk,
+.video {
+  cursor: pointer;
+}
+
+.message:hover .chat-image,
+.assignments:hover .task-image,
+.announcements:hover .announce-image {
+  filter: invert(76%) sepia(22%) saturate(797%) hue-rotate(156deg)
+    brightness(98%) contrast(92%);
+}
+
+/* .assignments {
+  position: absolute;
+  height: 37%;
+  top: 58%;
+  width: 30%;
+  left: 30%;
+  background-color: tomato;
+} */
+
+.announcements {
+  position: absolute;
+  height: 50%;
+  top: 5%;
+  width: 16%;
+  left: 82%;
+  background-color: var(--back);
+}
+
+.assignments {
+  position: absolute;
+  height: 38%;
+  top: 57%;
+  background-color: var(--back);
+
+  width: 28.7%;
+  left: 2%;
+}
+
+.video {
+  position: absolute;
+  height: 38%;
+  top: 57%;
+  background-color: var(--back);
+
+  width: 28.7%;
+  left: 35.7%;
+}
+
+.idk {
+  position: absolute;
+  height: 38%;
+  top: 57%;
+  background-color: var(--back);
+
+  width: 28.7%;
+  left: 69.3%;
+}

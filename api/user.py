@@ -62,7 +62,7 @@ class User(ToDictable):
             return None
         else:
             res = cursor.fetchone()
-            user = User(res[0], res[1], res[3], res[4], f"/users/{userid}/avatar")
+            user = User(res[0], res[1], res[3], res[4], f"api/users/{userid}/avatar")
             return user
 
     @staticmethod

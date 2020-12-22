@@ -69,7 +69,7 @@
         });
     }
     function on_sign_in() {
-        console.log("auto sign in");
+        window.location.href = 'home';
         // Do whatever you want here after sign in
     }
 

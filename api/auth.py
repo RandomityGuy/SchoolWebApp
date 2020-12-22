@@ -128,8 +128,8 @@ class Auth:
             int: The user id, None if token is expired/doesnt exist
         """
         if Auth.authorize(token):
-            query = "SELECT chatusers.id FROM tokens,chatusers WHERE tokens.user=chatusers.id;"
-            cursor.execute(query)
+            query = "SELECT user FROM tokens WHERE token = %s";
+            cursor.execute(query, (token,))
             if cursor.rowcount == 0:
                 return None
             return cursor.fetchone()[0]

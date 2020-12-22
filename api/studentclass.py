@@ -16,7 +16,7 @@ class StudentClass:
         cursor.execute("SELECT id, username, permissions FROM chatusers WHERE class=%s;", (classname,))
         L = []
         for (id, username, perms) in cursor:
-            L.append(User(id, username, perms, classname, f"/users/{id}/avatar"))
+            L.append(User(id, username, perms, classname, f"api/users/{id}/avatar"))
         return L
 
     def get_students_for_class(classname: str) -> list[User]:
@@ -31,7 +31,7 @@ class StudentClass:
         cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) != %s));", (classname, Permissions.CLASS_T, Permissions.CLASS_T))
         L = []
         for (id, username, perms) in cursor:
-            L.append(User(id, username, perms, classname, f"/users/{id}/avatar"))
+            L.append(User(id, username, perms, classname, f"api/users/{id}/avatar"))
         return L
 
     def get_class_teachers(classname: str) -> list[User]:
@@ -46,7 +46,7 @@ class StudentClass:
         cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) == %s));", (classname, Permissions.CLASS_T, Permissions.CLASS_T))
         L = []
         for (id, username, perms) in cursor:
-            L.append(User(id, username, perms, classname, f"/users/{id}/avatar"))
+            L.append(User(id, username, perms, classname, f"api/users/{id}/avatar"))
         return L
 
     def get_staff() -> list[User]:
@@ -58,7 +58,7 @@ class StudentClass:
         cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) == %s));", ("Staff", Permissions.SUPERUSER, Permissions.SUPERUSER))
         L = []
         for (id, username, perms) in cursor:
-            L.append(User(id, username, perms, "Staff", f"/users/{id}/avatar"))
+            L.append(User(id, username, perms, "Staff", f"api/users/{id}/avatar"))
         return L
 
     def get_classes() -> list[str]:

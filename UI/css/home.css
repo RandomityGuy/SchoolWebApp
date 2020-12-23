@@ -145,3 +145,22 @@ body {
   width: 28.7%;
   left: 69.3%;
 }
+
+#logout {
+  position: relative;
+  width: 40%;
+  height: 15%;
+  background-color: var(--back);
+  outline: 0;
+  border: 1px solid white;
+  color: white;
+  font-size: 1rem;
+  border-radius: 30px;
+  transition: 0.3s ease-in-out;
+}
+
+#logout:hover {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  cursor: pointer;
+}

@@ -10,3 +10,8 @@ function showBorder(element) {
 function hideBorder(element) {
   element.classList.remove('border');
 }
+
+function toggleAddChannel() {
+  document.getElementById('container').classList.toggle('disable');
+  document.getElementById('popup-add-channel').classList.toggle('hide');
+}

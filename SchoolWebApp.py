@@ -38,6 +38,9 @@ def home():
     return render_template("html/home.html");
 
 
+@app.route('/chat')
+def chatpage():
+    return render_template("html/chat.html");
 
 
 ## API

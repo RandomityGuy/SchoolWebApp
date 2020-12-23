@@ -12,7 +12,7 @@
         <div id="side-panel-top"></div>
       </div>
       <div id="main-panel">
-        <div id="main-panel-profile">
+        <div id="main-panel-profile" onclick="toggleUserDetails()">
           <div id="main-panel-profile-name">Krishiv Mandviya</div>
         </div>
         <div id="main-panel-messages">
@@ -86,5 +86,19 @@
         </div>
       </div>
     </div>
+    <div id="popups">
+      <div id="popup-user-detail" class="hide">
+        <div id="popup-user-detail-avatar"></div>
+        <div id="popup-user-detail-text">
+          <div id="popup-user-detail-name">Joseph Joestar</div>
+          <div id="popup-user-detail-class">XI Science</div>
+          <div id="popup-user-detail-id">UID1234567890</div>
+        </div>
+        <button id="popup-user-detail-back" onclick="toggleUserDetails()">
+          <-
+        </button>
+      </div>
+    </div>
   </body>
+  <script src="../js/chat.js"></script>
 </html>

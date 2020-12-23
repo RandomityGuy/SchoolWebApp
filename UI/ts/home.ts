@@ -2,9 +2,15 @@ const user_details_name = document.querySelector("#user-details-name-div") as HT
 const user_details_class = document.querySelector("#user-details-class-div") as HTMLDivElement;
 const user_details_id = document.querySelector("#user-details-id-div") as HTMLDivElement;
 const user_details_avatar = document.querySelector("#user-details-avatar") as HTMLDivElement;
+const logout_button = document.querySelector("#logout") as HTMLButtonElement;
 
 window.addEventListener('load', (e) => {
     populate_user_details();
+});
+
+logout_button.addEventListener('click', (e) => {
+    localStorage.removeItem('token');
+    window.location.href = '/';
 });
 
 export function populate_user_details() {

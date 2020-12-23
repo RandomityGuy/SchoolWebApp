@@ -5,8 +5,13 @@
     const user_details_class = document.querySelector("#user-details-class-div");
     const user_details_id = document.querySelector("#user-details-id-div");
     const user_details_avatar = document.querySelector("#user-details-avatar");
+    const logout_button = document.querySelector("#logout");
     window.addEventListener('load', (e) => {
         populate_user_details();
+    });
+    logout_button.addEventListener('click', (e) => {
+        localStorage.removeItem('token');
+        window.location.href = '/';
     });
     function populate_user_details() {
         let tok = localStorage.getItem('token');

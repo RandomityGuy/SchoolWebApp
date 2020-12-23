@@ -50,6 +50,21 @@ body {
   color: var(--accent);
 }
 
+#home {
+  position: relative;
+  left: 90%;
+  font-size: 1.5rem;
+  top: -40%;
+}
+
+#home a {
+  text-decoration: none;
+  color: white;
+}
+#home a:hover {
+  color: var(--accent);
+}
+
 #channels {
   position: relative;
   width: 100%;

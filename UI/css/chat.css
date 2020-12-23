@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  transition: 0.5s ease-in-out;
+}
+
+body {
+  --fore: #0a0a0a;
+  --back: #020202;
+  --accent: #79d2f1;
+  background-color: var(--back);
+  font-family: 'Montserrat', sans-serif;
+}
+
+#side-panel {
+  position: fixed;
+  width: 25%;
+  height: 100%;
+  background-color: var(--fore);
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#side-panel::-webkit-scrollbar {
+  display: none;
+}
+
+#side-panel-top {
+  position: relative;
+  width: 100%;
+  height: 10%;
+  background-color: tomato;
+}
+
+#main-panel {
+  position: fixed;
+  width: 75%;
+  height: 100%;
+  background-color: var(--back);
+  overflow-y: scroll;
+  left: 25%;
+}
+
+#main-panel-profile {
+  position: fixed;
+  width: 75%;
+  height: 10%;
+  background-color: var(--back);
+  color: white;
+  font-size: 2rem;
+  text-align: center;
+}
+
+#main-panel-profile:hover {
+  color: var(--accent);
+  cursor: pointer;
+}
+
+#main-panel-profile-name {
+  position: relative;
+  top: 20%;
+}
+
+#main-panel-messages {
+  position: relative;
+  width: 100%;
+  height: 80%;
+  top: 10%;
+  background-color: var(--back);
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#messages-recieved {
+  color: white;
+  position: relative;
+  margin-left: 5%;
+  margin-top: 3%;
+  text-align: left;
+  max-width: 80%;
+  border-left: 1px solid tomato;
+  padding-left: 3%;
+  font-weight: 300;
+  line-height: 1.5rem;
+}
+
+#messages-sent {
+  color: white;
+  position: relative;
+  right: 0%;
+  margin-right: -5%;
+  margin-top: 3%;
+  text-align: right;
+  max-width: 80%;
+  margin-left: 5%;
+  border-right: 1px solid var(--accent);
+  padding-right: 3%;
+  font-weight: 300;
+  line-height: 1.5rem;
+}
+
+metadata {
+  position: relative;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5rem;
+}
+timestamp {
+  position: relative;
+  margin-left: 1%;
+  font-size: 1rem;
+}
+
+#main-panel-profile::-webkit-scrollbar {
+  display: none;
+}
+
+#main-panel-bottom {
+  position: fixed;
+  width: 100%;
+  height: 10%;
+  top: 90%;
+  background-color: var(--back);
+}
+
+#main-input-message {
+  background-color: var(--back);
+  position: relative;
+  width: 56.3%;
+  height: 8vh;
+  top: 1vh;
+  left: 3.4%;
+  border: 1px solid white;
+  border: 0;
+  color: white;
+  padding-left: 1%;
+}
+
+#main-input-message:hover {
+  color: var(--accent);
+}
+
+#main-input-message:focus {
+  color: white;
+}
+
+#main-input-button {
+  position: relative;
+  left: 5%;
+  width: 5%;
+  height: 8vh;
+  top: 1vh;
+  border-radius: 10px;
+  border: 0;
+  outline: 0;
+  font-size: 1.2rem;
+  background-color: var(--accent);
+  color: var(--back);
+}
+
+#main-input-button:hover {
+  color: var(--accent);
+  background-color: var(--back);
+  cursor: pointer;
+}

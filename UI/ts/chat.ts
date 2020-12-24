@@ -6,6 +6,7 @@ const channel_header = document.querySelector("#main-panel-profile-name") as HTM
 const panel_profile = document.querySelector("#main-panel-profile") as HTMLDivElement;
 const popup_details_back = document.querySelector("#popup-user-detail-back") as HTMLButtonElement;
 const main_panel_messages = document.querySelector("#main-panel-messages") as HTMLDivElement;
+const channel_list = document.querySelector("#channels") as HTMLDivElement;
 
 class Channel {
     id: number;
@@ -42,8 +43,21 @@ token = localStorage.getItem('token');
 id = parseInt(localStorage.getItem('id'));
 fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
     channels = [];
+    let idx = 0;
     data.channels.forEach(element => {
         channels.push(new Channel(element.id, element.name, element.flags));
+        let channel_div = document.createElement('div');
+        channel_div.className = "channel";
+        channel_div.id = idx.toString();
+        channel_div.dataset.id = element.id;
+        channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
+        channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
+        channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
+
+        channel_div.innerHTML = element.name;
+        channel_list.appendChild(channel_div);
+        idx++;
+
     });
     current_channel = 0;
     set_channel_data();
@@ -61,6 +75,12 @@ popup_details_back.addEventListener('click', (e) => {
 function toggleUserDetails() {
   document.getElementById('container').classList.toggle('disable');
   document.getElementById('popup-user-detail').classList.toggle('hide');
+}
+
+function set_channel(channel_index: number) {
+    current_channel = channel_index;
+    set_channel_data();
+    get_chat();
 }
 
 function set_channel_data() {
@@ -95,6 +115,7 @@ function set_channel_data() {
 
 function get_chat() {
     let channel = channels[current_channel];
+    main_panel_messages.innerHTML = "";
 
     fetch(`/api/channels/${channel.id}/messages?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
         data.messages.forEach(element => {
@@ -122,4 +143,12 @@ function get_chat() {
             main_panel_messages.appendChild(div);      
         });
     });
+}
+
+function showBorder(element: HTMLDivElement) {
+    element.classList.add('border');
+}
+
+function hideBorder(element: HTMLDivElement) {
+  element.classList.remove('border');
 }

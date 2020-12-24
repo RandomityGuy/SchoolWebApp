@@ -17,8 +17,8 @@ class ChatModel(ToDictable):
         for m in self.messages:
             L.append(m.toDict())
         d["messages"] = L
-        d["lastmessageid"] = self.lastmessageid
-        d["channelid"] = self.channelid
+        d["lastmessageid"] = str(self.lastmessageid)
+        d["channelid"] = str(self.channelid)
         return d
 
 
@@ -29,7 +29,7 @@ class ChatMessageGroup(ToDictable):
         self.messages = messages
 
     def toDict(self):
-        d = {"id": self.id, "author": self.author.toDict()}
+        d = {"id": str(self.id), "author": self.author.toDict()}
         L = []
         for m in self.messages:
             L.append(m.toDict())
@@ -44,7 +44,7 @@ class ChatMessage(ToDictable):
         self.attachment = attachment
 
     def toDict(self):
-        return {"id": self.id, "content": self.content, "attachment": self.attachment}
+        return {"id": str(self.id), "content": self.content, "attachment": self.attachment}
 
 
 class ChatAuthor(ToDictable):
@@ -54,7 +54,7 @@ class ChatAuthor(ToDictable):
         self.avatarurl = avatarurl
 
     def toDict(self):
-        return {"id": self.id, "name": self.name, "avatarurl": self.avatarurl}
+        return {"id": str(self.id), "name": self.name, "avatarurl": self.avatarurl}
 
 
 class Channel(ToDictable):
@@ -67,7 +67,7 @@ class Channel(ToDictable):
         self.flags = flags
 
     def toDict(self):
-        return {"id": self.id, "name": self.name, "flags": self.flags}
+        return {"id": str(self.id), "name": self.name, "flags": self.flags}
 
     @staticmethod
     def validate_access(channel: int, userid: int) -> bool:
@@ -152,7 +152,7 @@ class Channel(ToDictable):
         if cursor.rowcount == 0:
             cursor.close();conn.close();
             return None
-        result = cursor.fetchone()['A.channelId'];
+        result = cursor.fetchone()['channelId'];
         cursor.close();conn.close();
         return result;
 
@@ -215,7 +215,7 @@ class Channel(ToDictable):
         """
         conn = connect(); cursor = conn.cursor();
         if Permissions.has_permission(Auth.get_permissions(int(userid)), Permissions.CAN_VIEW_ANY_CHANNEL):
-            cursor.execute("SELECT id channelId,name,flags FROM channels WHERE flags = 0 || flags = 2;");
+            cursor.execute("SELECT id channelId,name,flags FROM channels;");
         else:
             cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);", (userid,))
         retlist = []

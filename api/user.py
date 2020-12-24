@@ -13,7 +13,7 @@ class User(ToDictable):
 
     def toDict(self):
         D = {}
-        D["id"] = self.id
+        D["id"] = str(self.id)
         D["username"] = self.username
         D["class"] = self.studentclass
         D["avatar-url"] = self.avatarurl

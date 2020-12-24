@@ -27,11 +27,15 @@ class Announcements:
         Returns:
             int: The announcement id, if the announcement was successfully created
         """
+        conn = connect();
+        cursor = conn.cursor();
         perms = Auth.get_permissions(user)
         if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
             id = snowflakegen.__next__()
-            global_cursor.execute("INSERT INTO announcements VALUES(%s,%s,%s,%s);", (id, user, destclass, text))
-            db.commit()
+            cursor.execute("INSERT INTO announcements VALUES(%s,%s,%s,%s);", (id, user, destclass, text))
+            conn.commit()
+            cursor.close();
+            conn.commit();
             return id
         else:
             return False
@@ -50,8 +54,12 @@ class Announcements:
         perms = Auth.get_permissions(user)
         if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
             id = snowflakegen.__next__()
-            global_cursor.execute("DELETE FROM announcements WHERE id = %s;", (announcementid,))
-            db.commit()
+            conn = connect();
+            cursor = conn.cursor();
+            cursor.execute("DELETE FROM announcements WHERE id = %s;", (announcementid,))
+            conn.commit()
+            cursor.close();
+            conn.commit();
             return True
         else:
             return False
@@ -66,12 +74,16 @@ class Announcements:
         Returns:
             list[Announcement]: The list of announcements
         """
-        global_cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;", (user,))
-        res = global_cursor.fetchall()
+        conn = connect();
+        cursor = conn.cursor();
+        cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;", (user,))
+        res = cursor.fetchall()
         L = []
-        for (id, byuser, clas, content) in res:
-            L.append(Announcement(id, byuser, clas, content))
+        for result in res:
+            L.append(Announcement(result['a.id'], result['a.byuser'], result['a.class'], result['a.content']))
 
+        cursor.close();
+        conn.commit();
         return L
 
     @staticmethod
@@ -84,10 +96,14 @@ class Announcements:
         Returns:
             list[Announcement]: The list of announcements
         """
-        res = global_cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;", (userclass,))
+        conn = connect();
+        cursor = conn.cursor();
+        res = cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;", (userclass,))
 
         L = []
-        for (id, byuser, clas, content) in res:
-            L.append(Announcement(id, byuser, clas, content))
+        for result in res:
+            L.append(Announcement(result['a.id'], result['a.byuser'], result['a.class'], result['a.content']));
 
+        cursor.close();
+        conn.commit();
         return L

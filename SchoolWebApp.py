@@ -218,7 +218,7 @@ def getuser(user):
     if (user == "@me"): 
         user = userid;
     if request.method == "GET":
-        userdata = api.User.get_user(userid)
+        userdata = api.User.get_user(user)
         if userdata == None:
             return abort(403)
         return jsonify(userdata.toDict())

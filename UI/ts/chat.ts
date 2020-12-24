@@ -44,12 +44,12 @@ id = parseInt(localStorage.getItem('id'));
 fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
     channels = [];
     let idx = 0;
-    data.channels.forEach(element => {
+    data.channels.forEach((element: { id: number; name: string; flags: number; }) => {
         channels.push(new Channel(element.id, element.name, element.flags));
         let channel_div = document.createElement('div');
         channel_div.className = "channel";
         channel_div.id = idx.toString();
-        channel_div.dataset.id = element.id;
+        channel_div.dataset.id = element.id.toString();
         channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
         channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
         channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
@@ -89,7 +89,7 @@ function set_channel_data() {
     fetch(`/api/channels/${channel.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
 
         channel_members = [];
-        data.users.forEach(element => {
+        data.users.forEach((element: { id: number; name: string; avatarurl: string; }) => {
             channel_members.push(new ChannelMember(element.id, element.name, element.avatarurl));
         });
 
@@ -118,7 +118,7 @@ function get_chat() {
     main_panel_messages.innerHTML = "";
 
     fetch(`/api/channels/${channel.id}/messages?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
-        data.messages.forEach(element => {
+        data.messages.forEach((element: { author: { name: any; id: any; avatarurl: any; }; id: any; messages: { content: any; }[]; }) => {
             let sender_name = element.author.name;
             let sender_id = element.author.id;
             let sender_avatar = element.author.avatarurl;
@@ -126,13 +126,20 @@ function get_chat() {
             let message_content = element.messages[0].content;
 
             let div = document.createElement('div');
-            div.innerHTML = `<metadata>
-                    <user>${sender_name}</user>
-                    <timestamp>${sender_id}</timestamp>
-                 </metadata>
-                 <div id="message">
-                    ${message_content}
-                 </div>`;
+            let metadata = document.createElement('metadata');
+            let user = document.createElement('user');
+            metadata.addEventListener('click', (e) => show_user_details(sender_id));
+            user.textContent = sender_name;
+            let timestamp = document.createElement('timestamp');
+            let utc = snowflake_to_timestamp(BigInt(message_id));
+            timestamp.textContent = new Date(utc * 1000).toString();
+            metadata.appendChild(user);
+            metadata.appendChild(timestamp);
+            div.appendChild(metadata);
+            let msgdiv = document.createElement('div');
+            msgdiv.id = "message";
+            msgdiv.textContent = message_content;
+            div.appendChild(msgdiv);
             
             if (sender_id != id) {
                 div.id = "messages-recieved";
@@ -145,10 +152,27 @@ function get_chat() {
     });
 }
 
+function show_user_details(id: number) {
+    fetch(`/api/users/${id}?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+        popup_details_id.textContent = data.id;
+        popup_details_name.textContent = data.username;
+        popup_details_avatar.style.backgroundImage = "url(" + data["avatar-url"] + ")";
+        popup_details_class.textContent = data.class;
+        toggleUserDetails();
+    });
+}
+
 function showBorder(element: HTMLDivElement) {
     element.classList.add('border');
 }
 
 function hideBorder(element: HTMLDivElement) {
   element.classList.remove('border');
+}
+
+function snowflake_to_timestamp(_id: bigint) {
+    _id = _id >> BigInt(22);
+    _id += BigInt(1142974214000);
+    _id = _id / BigInt(1000);
+    return Number(_id);
 }

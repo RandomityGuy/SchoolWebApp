@@ -34,12 +34,12 @@
   fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
       channels = [];
       let idx = 0;
-      data.channels.forEach(element => {
+      data.channels.forEach((element) => {
           channels.push(new Channel(element.id, element.name, element.flags));
           let channel_div = document.createElement('div');
           channel_div.className = "channel";
           channel_div.id = idx.toString();
-          channel_div.dataset.id = element.id;
+          channel_div.dataset.id = element.id.toString();
           channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
           channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
           channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
@@ -70,7 +70,7 @@
       let channel = channels[current_channel];
       fetch(`/api/channels/${channel.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           channel_members = [];
-          data.users.forEach(element => {
+          data.users.forEach((element) => {
               channel_members.push(new ChannelMember(element.id, element.name, element.avatarurl));
           });
           if ((channel.flags & 1) == 1) {
@@ -93,20 +93,27 @@
       let channel = channels[current_channel];
       main_panel_messages.innerHTML = "";
       fetch(`/api/channels/${channel.id}/messages?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
-          data.messages.forEach(element => {
+          data.messages.forEach((element) => {
               let sender_name = element.author.name;
               let sender_id = element.author.id;
               let sender_avatar = element.author.avatarurl;
               let message_id = element.id;
               let message_content = element.messages[0].content;
               let div = document.createElement('div');
-              div.innerHTML = `<metadata>
-                    <user>${sender_name}</user>
-                    <timestamp>${sender_id}</timestamp>
-                 </metadata>
-                 <div id="message">
-                    ${message_content}
-                 </div>`;
+              let metadata = document.createElement('metadata');
+              let user = document.createElement('user');
+              metadata.addEventListener('click', (e) => show_user_details(sender_id));
+              user.textContent = sender_name;
+              let timestamp = document.createElement('timestamp');
+              let utc = snowflake_to_timestamp(BigInt(message_id));
+              timestamp.textContent = new Date(utc * 1000).toString();
+              metadata.appendChild(user);
+              metadata.appendChild(timestamp);
+              div.appendChild(metadata);
+              let msgdiv = document.createElement('div');
+              msgdiv.id = "message";
+              msgdiv.textContent = message_content;
+              div.appendChild(msgdiv);
               if (sender_id != id) {
                   div.id = "messages-recieved";
               }
@@ -117,11 +124,26 @@
           });
       });
   }
+  function show_user_details(id) {
+      fetch(`/api/users/${id}?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+          popup_details_id.textContent = data.id;
+          popup_details_name.textContent = data.username;
+          popup_details_avatar.style.backgroundImage = "url(" + data["avatar-url"] + ")";
+          popup_details_class.textContent = data.class;
+          toggleUserDetails();
+      });
+  }
   function showBorder(element) {
       element.classList.add('border');
   }
   function hideBorder(element) {
       element.classList.remove('border');
+  }
+  function snowflake_to_timestamp(_id) {
+      _id = _id >> BigInt(22);
+      _id += BigInt(1142974214000);
+      _id = _id / BigInt(1000);
+      return Number(_id);
   }
 
 }());

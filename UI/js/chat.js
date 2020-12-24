@@ -10,6 +10,10 @@
   const popup_details_back = document.querySelector("#popup-user-detail-back");
   const main_panel_messages = document.querySelector("#main-panel-messages");
   const channel_list = document.querySelector("#channels");
+  const add_channel = document.querySelector("#add-channel");
+  const popup_channel_back = document.querySelector("#popup-add-channel-back");
+  const popup_channel_submit = document.querySelector("#channel-user-submit");
+  const popup_channel_input = document.querySelector("#channel-user-id");
   class Channel {
       constructor(id, name, flags) {
           this.id = id;
@@ -30,32 +34,18 @@
   let token = null;
   let id = null;
   token = localStorage.getItem('token');
-  id = parseInt(localStorage.getItem('id'));
-  fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
-      channels = [];
-      let idx = 0;
-      data.channels.forEach((element) => {
-          channels.push(new Channel(element.id, element.name, element.flags));
-          let channel_div = document.createElement('div');
-          channel_div.className = "channel";
-          channel_div.id = idx.toString();
-          channel_div.dataset.id = element.id.toString();
-          channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
-          channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
-          channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
-          channel_div.innerHTML = element.name;
-          channel_list.appendChild(channel_div);
-          idx++;
-      });
-      current_channel = 0;
-      set_channel_data();
-      get_chat();
-  });
+  id = localStorage.getItem('id');
+  set_channel_sidebar();
   panel_profile.addEventListener('click', (e) => {
       toggleUserDetails();
   });
   popup_details_back.addEventListener('click', (e) => {
       toggleUserDetails();
+  });
+  add_channel.addEventListener('click', (e) => toggleAddChannel());
+  popup_channel_back.addEventListener('click', (e) => toggleAddChannel());
+  popup_channel_submit.addEventListener('click', (e) => {
+      create_dm(parseInt(popup_channel_input.value));
   });
   function toggleUserDetails() {
       document.getElementById('container').classList.toggle('disable');
@@ -66,12 +56,59 @@
       set_channel_data();
       get_chat();
   }
+  function set_channel_sidebar() {
+      channel_list.innerHTML = "";
+      fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+          channels = [];
+          let idx = 0;
+          data.channels.forEach((element) => {
+              channels.push(new Channel(element.id.toString(), element.name, element.flags));
+              let channel_div = document.createElement('div');
+              channel_div.className = "channel";
+              channel_div.id = idx.toString();
+              channel_div.dataset.id = element.id.toString();
+              channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
+              channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
+              channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
+              if ((element.flags & 1) == 1) {
+                  fetch(`/api/channels/${element.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+                      channel_members = [];
+                      data.users.forEach((element) => {
+                          channel_members.push(new ChannelMember(element.id.toString(), element.name, element.avatarurl));
+                      });
+                      let is_in_channel = channel_members.find((c) => c.id == id) !== undefined;
+                      if (is_in_channel) {
+                          let other_member = channel_members.find((c) => c.id != id);
+                          channel_div.textContent = other_member.name;
+                      }
+                      else {
+                          let one = channel_members[0].name;
+                          let two = null;
+                          if (channel_members.length > 1)
+                              two = channel_members[1].name;
+                          else
+                              two = "Empty";
+                          channel_div.textContent = `${one} - ${two}`;
+                      }
+                  });
+              }
+              else {
+                  channel_div.textContent = element.name;
+              }
+              channel_list.appendChild(channel_div);
+              idx++;
+          });
+          current_channel = 0;
+          set_channel_data();
+          get_chat();
+      });
+  }
   function set_channel_data() {
       let channel = channels[current_channel];
       fetch(`/api/channels/${channel.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           channel_members = [];
           data.users.forEach((element) => {
-              channel_members.push(new ChannelMember(element.id, element.name, element.avatarurl));
+              channel_members.push(new ChannelMember(element.id.toString(), element.name, element.avatarurl));
           });
           if ((channel.flags & 1) == 1) {
               let other_member = channel_members.find((c) => c.id != id);
@@ -133,6 +170,17 @@
           toggleUserDetails();
       });
   }
+  function create_dm(id) {
+      fetch(`/api/users/${id}/DM?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+          let channel_id = parseInt(data.id);
+          let channel_name = data.channel_name;
+          let flags = parseInt(data.flags);
+          let channel = new Channel(channel_id.toString(), channel_name, flags);
+          channels.push(channel);
+          set_channel_sidebar();
+          toggleAddChannel();
+      });
+  }
   function showBorder(element) {
       element.classList.add('border');
   }
@@ -144,6 +192,10 @@
       _id += BigInt(1142974214000);
       _id = _id / BigInt(1000);
       return Number(_id);
+  }
+  function toggleAddChannel() {
+      document.getElementById('container').classList.toggle('disable');
+      document.getElementById('popup-add-channel').classList.toggle('hide');
   }
 
 }());

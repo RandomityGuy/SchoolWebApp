@@ -7,13 +7,17 @@ const panel_profile = document.querySelector("#main-panel-profile") as HTMLDivEl
 const popup_details_back = document.querySelector("#popup-user-detail-back") as HTMLButtonElement;
 const main_panel_messages = document.querySelector("#main-panel-messages") as HTMLDivElement;
 const channel_list = document.querySelector("#channels") as HTMLDivElement;
+const add_channel = document.querySelector("#add-channel") as HTMLDivElement;
+const popup_channel_back = document.querySelector("#popup-add-channel-back") as HTMLButtonElement;
+const popup_channel_submit = document.querySelector("#channel-user-submit") as HTMLInputElement;
+const popup_channel_input = document.querySelector("#channel-user-id") as HTMLInputElement;
 
 class Channel {
-    id: number;
+    id: string;
     name: string;
     flags: number;
 
-    constructor(id: number, name: string, flags: number) {
+    constructor(id: string, name: string, flags: number) {
         this.id = id;
         this.name = name;
         this.flags = flags;
@@ -21,11 +25,11 @@ class Channel {
 }
 
 class ChannelMember {
-    id: number;
+    id: string;
     avatarurl: string;
     name: string;
 
-    constructor(id: number, name: string, avatarurl: string) {
+    constructor(id: string, name: string, avatarurl: string) {
         this.id = id;
         this.name = name;
         this.avatarurl = avatarurl;
@@ -37,32 +41,11 @@ let channel_members: ChannelMember[] = null;
 let current_channel: number = null;
 
 let token: string = null;
-let id: number = null;
+let id: string = null;
 
 token = localStorage.getItem('token');
-id = parseInt(localStorage.getItem('id'));
-fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
-    channels = [];
-    let idx = 0;
-    data.channels.forEach((element: { id: number; name: string; flags: number; }) => {
-        channels.push(new Channel(element.id, element.name, element.flags));
-        let channel_div = document.createElement('div');
-        channel_div.className = "channel";
-        channel_div.id = idx.toString();
-        channel_div.dataset.id = element.id.toString();
-        channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
-        channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
-        channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
-
-        channel_div.innerHTML = element.name;
-        channel_list.appendChild(channel_div);
-        idx++;
-
-    });
-    current_channel = 0;
-    set_channel_data();
-    get_chat();
-});
+id = localStorage.getItem('id');
+set_channel_sidebar();
 
 panel_profile.addEventListener('click', (e) => {
     toggleUserDetails();
@@ -70,6 +53,14 @@ panel_profile.addEventListener('click', (e) => {
 
 popup_details_back.addEventListener('click', (e) => {
     toggleUserDetails();
+});
+
+add_channel.addEventListener('click', (e) => toggleAddChannel());
+
+popup_channel_back.addEventListener('click', (e) => toggleAddChannel());
+
+popup_channel_submit.addEventListener('click', (e) => {
+    create_dm(parseInt(popup_channel_input.value));
 });
 
 function toggleUserDetails() {
@@ -83,6 +74,52 @@ function set_channel(channel_index: number) {
     get_chat();
 }
 
+function set_channel_sidebar() {
+    channel_list.innerHTML = "";
+    fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+        channels = [];
+        let idx = 0;
+        data.channels.forEach((element: { id: number; name: string; flags: number; }) => {
+            channels.push(new Channel(element.id.toString(), element.name, element.flags));
+            let channel_div = document.createElement('div');
+            channel_div.className = "channel";
+            channel_div.id = idx.toString();
+            channel_div.dataset.id = element.id.toString();
+            channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
+            channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
+            channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
+
+            if ((element.flags & 1) == 1) {
+                fetch(`/api/channels/${element.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+
+                    channel_members = [];
+                    data.users.forEach((element: { id: number; name: string; avatarurl: string; }) => {
+                        channel_members.push(new ChannelMember(element.id.toString(), element.name, element.avatarurl));
+                    });
+                    let is_in_channel = channel_members.find((c) => c.id == id) !== undefined;
+                    if (is_in_channel) {
+                        let other_member: ChannelMember = channel_members.find((c) => c.id != id);
+                        channel_div.textContent = other_member.name;
+                    } else {
+                        let one = channel_members[0].name;
+                        let two: string = null;
+                        if (channel_members.length > 1) two = channel_members[1].name; else two = "Empty";
+                        channel_div.textContent = `${one} - ${two}`;
+                    }
+                });
+            } else {
+                channel_div.textContent = element.name;
+            }
+            channel_list.appendChild(channel_div);
+            idx++;
+
+        });
+        current_channel = 0;
+        set_channel_data();
+        get_chat();
+    });
+}
+
 function set_channel_data() {
     let channel = channels[current_channel];
 
@@ -90,7 +127,7 @@ function set_channel_data() {
 
         channel_members = [];
         data.users.forEach((element: { id: number; name: string; avatarurl: string; }) => {
-            channel_members.push(new ChannelMember(element.id, element.name, element.avatarurl));
+            channel_members.push(new ChannelMember(element.id.toString(), element.name, element.avatarurl));
         });
 
         if ((channel.flags & 1) == 1) {
@@ -162,6 +199,20 @@ function show_user_details(id: number) {
     });
 }
 
+function create_dm(id: number) {
+    fetch(`/api/users/${id}/DM?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+        let channel_id = parseInt(data.id);
+        let channel_name = data.channel_name;
+        let flags = parseInt(data.flags);
+
+        let channel = new Channel(channel_id.toString(), channel_name, flags);
+        channels.push(channel);
+
+        set_channel_sidebar();
+        toggleAddChannel();
+    });
+}
+
 function showBorder(element: HTMLDivElement) {
     element.classList.add('border');
 }
@@ -175,4 +226,9 @@ function snowflake_to_timestamp(_id: bigint) {
     _id += BigInt(1142974214000);
     _id = _id / BigInt(1000);
     return Number(_id);
+}
+
+function toggleAddChannel() {
+    document.getElementById('container').classList.toggle('disable');
+    document.getElementById('popup-add-channel').classList.toggle('hide');
 }

@@ -77,7 +77,6 @@ class User(ToDictable):
             return None
         else:
             res = cursor.fetchone()
-            print(res);
             user = User(res['Id'], res['Username'], res['permissions'], res['class'], f"api/users/{userid}/avatar")
             cursor.close();
             conn.close();

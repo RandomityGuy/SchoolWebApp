@@ -307,8 +307,7 @@ class Channel(ToDictable):
         cursor.execute("SELECT chatusers.id, username FROM channelmembers,chatusers WHERE (channelmembers.channelId = %s && channelmembers.userid = chatusers.id);", (channelid,))
         retlist = []
         for res in cursor.fetchall():
-            print(res);
-            retlist.append(ChatAuthor(res['id'], res['username'], f"api/users/{id}/avatar"))
+            retlist.append(ChatAuthor(res['id'], res['username'], f"api/users/{res['id']}/avatar"))
         cursor.close();conn.close();
         return retlist
 

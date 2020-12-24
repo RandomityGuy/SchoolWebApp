@@ -55,24 +55,19 @@ def authenticate_user() -> int:
 ### CHAT
 @app.route("/api/channels", methods=["GET"])
 def get_channels():
-    print("auth user");
     userid = authenticate_user()
-    print("getting channels");
     chm = api.ChannelModel(api.Channel.get_channel_list(userid)).toDict();
-    print("got channels");
     return jsonify(chm)
 
 
 @app.route("/api/channels/<channel>", methods=["GET"])
 def get_channel(channel):
     userid = authenticate_user()
-    print("getting channel");
 
     if not api.Channel.validate_access(channel, userid):
         abort(403)
 
     ch = api.Channel.get_channel(channel)
-    print("got channel");
     return jsonify(ch.toDict())
 
 
@@ -127,7 +122,7 @@ def get_user_list(channel):
 
 @app.route("/api/channels/<channel>/messages", methods=["POST"])
 def send_chat_message(channel):
-    msg = request.json.get["message"]
+    msg = request.json.get("message");
     userid = authenticate_user()
 
     canAccessThisChannel = api.Channel.validate_access(channel, userid)
@@ -135,11 +130,6 @@ def send_chat_message(channel):
         abort(403)
 
     if api.Channel.send_message(channel, userid, msg):
-        api.cursor.execute(f"SELECT Username FROM ChatUsers WHERE Id = {userid};")
-        author = ""
-        for username in api.cursor:
-            author = username
-            break
         return "OK"
     else:
         abort(403)

@@ -92,10 +92,8 @@ class Auth:
         """
         conn = connect();
         cursor = conn.cursor();
-        print("authorizing token");
         cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && token=%s);", (token,))
         res = cursor.fetchall();
-        print(res);
         if len(res) == 0:
             cursor.close();conn.close();
             return False
@@ -141,7 +139,7 @@ class Auth:
             cursor.close();conn.close();
             return None
         perms = res[0];
-        print("got perms");
+
         cursor.close();conn.close();
         return perms['permissions'];
 
@@ -157,13 +155,10 @@ class Auth:
         """
         conn = connect();
         cursor = conn.cursor();
-        print("get_token_user_id");
         if Auth.authorize(token):
-            print("token authorized");
             query = "SELECT user FROM tokens WHERE token = %s";
             cursor.execute(query, (token,))
             res = cursor.fetchall();
-            print(res);
             if len(res) == 0:
                 cursor.close();conn.close();
                 return None

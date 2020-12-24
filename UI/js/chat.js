@@ -14,6 +14,8 @@
   const popup_channel_back = document.querySelector("#popup-add-channel-back");
   const popup_channel_submit = document.querySelector("#channel-user-submit");
   const popup_channel_input = document.querySelector("#channel-user-id");
+  const send_button = document.querySelector("#main-input-button");
+  const send_box = document.querySelector("#main-input-message");
   class Channel {
       constructor(id, name, flags) {
           this.id = id;
@@ -33,6 +35,7 @@
   let current_channel = null;
   let token = null;
   let id = null;
+  let lastmsgid = null;
   token = localStorage.getItem('token');
   id = localStorage.getItem('id');
   set_channel_sidebar();
@@ -46,6 +49,17 @@
   popup_channel_back.addEventListener('click', (e) => toggleAddChannel());
   popup_channel_submit.addEventListener('click', (e) => {
       create_dm(parseInt(popup_channel_input.value));
+  });
+  send_button.addEventListener('click', (e) => {
+      send_chat_message(send_box.value);
+      send_box.value = "";
+  });
+  send_box.addEventListener('keydown', (e) => {
+      if (e.key == "Enter") {
+          e.preventDefault();
+          send_chat_message(send_box.value);
+          send_box.value = "";
+      }
   });
   function toggleUserDetails() {
       document.getElementById('container').classList.toggle('disable');
@@ -136,29 +150,9 @@
               let sender_avatar = element.author.avatarurl;
               let message_id = element.id;
               let message_content = element.messages[0].content;
-              let div = document.createElement('div');
-              let metadata = document.createElement('metadata');
-              let user = document.createElement('user');
-              metadata.addEventListener('click', (e) => show_user_details(sender_id));
-              user.textContent = sender_name;
-              let timestamp = document.createElement('timestamp');
-              let utc = snowflake_to_timestamp(BigInt(message_id));
-              timestamp.textContent = new Date(utc * 1000).toString();
-              metadata.appendChild(user);
-              metadata.appendChild(timestamp);
-              div.appendChild(metadata);
-              let msgdiv = document.createElement('div');
-              msgdiv.id = "message";
-              msgdiv.textContent = message_content;
-              div.appendChild(msgdiv);
-              if (sender_id != id) {
-                  div.id = "messages-recieved";
-              }
-              else {
-                  div.id = "messages-sent";
-              }
-              main_panel_messages.appendChild(div);
+              add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content);
           });
+          lastmsgid = data.lastmessageid;
       });
   }
   function show_user_details(id) {
@@ -166,7 +160,13 @@
           popup_details_id.textContent = data.id;
           popup_details_name.textContent = data.username;
           popup_details_avatar.style.backgroundImage = "url(" + data["avatar-url"] + ")";
-          popup_details_class.textContent = data.class;
+          let perms = data.permissions;
+          if (perms == 511) {
+              popup_details_class.textContent = "PRINCIPAL | Staff";
+          }
+          else {
+              popup_details_class.textContent = data.class;
+          }
           toggleUserDetails();
       });
   }
@@ -180,6 +180,41 @@
           set_channel_sidebar();
           toggleAddChannel();
       });
+  }
+  function add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content, scroll = false) {
+      let div = document.createElement('div');
+      let metadata = document.createElement('metadata');
+      let user = document.createElement('user');
+      metadata.addEventListener('click', (e) => show_user_details(sender_id));
+      user.textContent = sender_name;
+      let timestamp = document.createElement('timestamp');
+      let utc = snowflake_to_timestamp(BigInt(message_id));
+      timestamp.textContent = new Date(utc * 1000).toString();
+      metadata.appendChild(user);
+      metadata.appendChild(timestamp);
+      div.appendChild(metadata);
+      let msgdiv = document.createElement('div');
+      msgdiv.id = "message";
+      msgdiv.textContent = message_content;
+      div.appendChild(msgdiv);
+      if (sender_id != id) {
+          div.id = "messages-recieved";
+      }
+      else {
+          div.id = "messages-sent";
+      }
+      main_panel_messages.appendChild(div);
+      if (scroll) {
+          main_panel_messages.scrollTop = main_panel_messages.scrollHeight;
+      }
+  }
+  function send_chat_message(content) {
+      let body = { message: content };
+      fetch(`/api/channels/${channels[current_channel].id}/messages?` + new URLSearchParams({ token: token.toString() }), {
+          method: "POST",
+          body: JSON.stringify(body),
+          headers: { 'Content-Type': 'application/json' },
+      }).then(e => update_chat(true));
   }
   function showBorder(element) {
       element.classList.add('border');
@@ -197,5 +232,21 @@
       document.getElementById('container').classList.toggle('disable');
       document.getElementById('popup-add-channel').classList.toggle('hide');
   }
+  function update_chat(scroll = false) {
+      fetch(`/api/channels/${channels[current_channel].id}/messages?after=${lastmsgid}&` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
+          data.messages.forEach((element) => {
+              let sender_name = element.author.name;
+              let sender_id = element.author.id;
+              let sender_avatar = element.author.avatarurl;
+              let message_id = element.id;
+              let message_content = element.messages[0].content;
+              add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content, scroll);
+          });
+          if (data.lastmessageid != -1) {
+              lastmsgid = data.lastmessageid;
+          }
+      });
+  }
+  let update_interval = setInterval(update_chat, 3000);
 
 }());

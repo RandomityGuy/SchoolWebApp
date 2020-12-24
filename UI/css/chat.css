@@ -163,6 +163,11 @@ metadata {
   color: rgba(255, 255, 255, 0.5);
   font-size: 1.5rem;
 }
+
+metadata:hover {
+  cursor: pointer;
+}
+
 timestamp {
   position: relative;
   margin-left: 1%;

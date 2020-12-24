@@ -62,8 +62,10 @@
       }
   });
   function toggleUserDetails() {
-      document.getElementById('container').classList.toggle('disable');
-      document.getElementById('popup-user-detail').classList.toggle('hide');
+      if (channels[current_channel].flags != 0) {
+          document.getElementById('container').classList.toggle('disable');
+          document.getElementById('popup-user-detail').classList.toggle('hide');
+      }
   }
   function set_channel(channel_index) {
       current_channel = channel_index;

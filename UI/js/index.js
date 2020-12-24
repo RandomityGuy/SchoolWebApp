@@ -63,8 +63,8 @@
             if (e.status != 403) {
                 e.json().then(resp => {
                     localStorage.setItem('token', resp.token);
+                    on_sign_in();
                 });
-                on_sign_in();
             }
         });
     }

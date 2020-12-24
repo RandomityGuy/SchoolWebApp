@@ -1,5 +1,5 @@
-Flask==1.1.2
-PyMySQL==0.10.1
-python_bcrypt==0.3.2
-python_magic==0.4.18
+Flask
+PyMySQL
+bcrypt
+python_magic
 python-magic-bin

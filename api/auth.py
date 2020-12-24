@@ -39,6 +39,7 @@ class Auth:
             cursor.close();conn.close();
             raise Exception("No password set")
 
+
         if bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd.encode('utf-8')).digest()), data['password'].encode('utf-8')):
             cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && user=%s);", (data['id'],))
             res = cursor.fetchall();

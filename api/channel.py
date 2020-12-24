@@ -1,4 +1,5 @@
 from __future__ import annotations
+from os import curdir
 from api.permissions import Permissions
 from api.auth import Auth
 from api.base import *
@@ -79,19 +80,20 @@ class Channel(ToDictable):
         Returns:
             bool: True if the user can access the channel
         """
-
         if Permissions.has_permission(Auth.get_permissions(userid), Permissions.CAN_VIEW_ANY_CHANNEL):
             return True
 
         if Channel.is_expired(channel):
             return False
 
+        conn = connect(); cursor = conn.cursor();
         cursor.execute("select id from channelmembers where channelId = %s && userid = %s;", (channel, userid))
 
-        for id in cursor:
-            return True
-
-        return False
+        if cursor.rowcount == 0:
+            cursor.close();conn.close();
+            return False;
+        cursor.close();conn.close();
+        return True;
 
     @staticmethod
     def create_channel(channelname: str, members: list[int], flags: int) -> int:
@@ -106,11 +108,13 @@ class Channel(ToDictable):
             int: The created channel id
         """
 
+        conn = connect(); cursor = conn.cursor();
         channelid = snowflakegen.__next__()
         cursor.execute("INSERT INTO channels VALUES(%s,%s,%s);", (channelid, channelname, flags))
         for member in members:
             cursor.execute("INSERT INTO channelmembers VALUES(%s,%s,%s);", (snowflakegen.__next__(), channelid, member))
-        db.commit()
+        conn.commit();
+        cursor.close();conn.close();
         return channelid
 
     @staticmethod
@@ -123,9 +127,12 @@ class Channel(ToDictable):
         Returns:
             bool: True if it exists
         """
+        conn = connect(); cursor = conn.cursor();
         cursor.execute("SELECT id from channels WHERE id = %s;", (channelid,))
         if len(cursor) != 0:
+            cursor.close();conn.close();
             return True
+        cursor.close();conn.close();
         return False
 
     @staticmethod
@@ -139,11 +146,15 @@ class Channel(ToDictable):
         Returns:
             int | None: The DM channel id if it exists, else None
         """
+        conn = connect(); cursor = conn.cursor();
         query = "SELECT A.channelId, COUNT(*) FROM (SELECT channelmembers.id, channelId, userId FROM channelmembers, channels WHERE (channels.flags & %s) = %s && channels.id = channelmembers.channelId) AS A WHERE A.userid IN (%s,%s) GROUP BY A.channelId HAVING COUNT(*) = 2;"
         cursor.execute(query, (Channel.DM_CHANNEL, Channel.DM_CHANNEL, userone, usertwo))
         if cursor.rowcount == 0:
+            cursor.close();conn.close();
             return None
-        return cursor.fetchone()[0]
+        result = cursor.fetchone()['A.channelId'];
+        cursor.close();conn.close();
+        return result;
 
     @staticmethod
     def create_DM(userone: int, usertwo: int, is_req: bool = False) -> int:
@@ -173,8 +184,10 @@ class Channel(ToDictable):
         """
 
         if Channel.channel_exists(channelid):
+            conn = connect(); cursor = conn.cursor();
             cursor.execute("INSERT INTO channelmembers VALUES(%s,%s,%s);", (snowflakegen.__next__(), channelid, userid))
-            db.commit()
+            conn.commit();
+            cursor.close();conn.close();
 
     @staticmethod
     def leave_channel(channelid: int, userid: int):
@@ -185,8 +198,10 @@ class Channel(ToDictable):
             userid (int): The user id
         """
         if Channel.channel_exists(channelid):
+            conn = connect(); cursor = conn.cursor();
             cursor.execute("DELETE FROM channelmembers WHERE (channelId=%s && userid=%s);", (channelid, userid))
-            db.commit()
+            conn.commit();
+            cursor.close();conn.close();
 
     @staticmethod
     def get_channel_list(userid: int) -> list[Channel]:
@@ -198,13 +213,18 @@ class Channel(ToDictable):
         Returns:
             list[Channel]: The channel list
         """
-        if Permissions.has_permission(Auth.get_permissions(userid), Permissions.CAN_VIEW_ANY_CHANNEL):
-            cursor.execute("SELECT channelId,name,flags FROM channelmembers,channels WHERE userid = %s;", (userid,))
+        conn = connect(); cursor = conn.cursor();
+        if Permissions.has_permission(Auth.get_permissions(int(userid)), Permissions.CAN_VIEW_ANY_CHANNEL):
+            cursor.execute("SELECT id channelId,name,flags FROM channels WHERE flags = 0 || flags = 2;");
         else:
             cursor.execute("select channelId,name,flags from channelmembers,channels where (channelmembers.channelid = channels.id && userid = %s);", (userid,))
         retlist = []
-        for (id, name, flags) in cursor:
-            retlist.append(Channel(id, name, flags))
+
+        results = cursor.fetchall();
+
+        for res in results:
+            retlist.append(Channel(res['channelId'],res['name'],res['flags']));
+        cursor.close();conn.close();
         return retlist
 
     @staticmethod
@@ -217,12 +237,17 @@ class Channel(ToDictable):
         Returns:
             Channel: The channel
         """
-        cursor.execute("select channelId,name,flags from channelmembers,channels where id = %s;", (channelid,))
+        conn = connect(); cursor = conn.cursor();
+        cursor.execute("select channelId,name,flags from channelmembers,channels where channels.id = %s;", (channelid,))
         if cursor.rowcount == None:
+            cursor.close();conn.close();
             return None
         retlist = []
-        for (id, name, flags) in cursor:
-            retlist.append(Channel(id, name, flags))
+        results = cursor.fetchall();
+
+        for res in results:
+            retlist.append(Channel(res['channelId'],res['name'],res['flags']));
+        cursor.close();conn.close();
         return retlist[0]
 
     @staticmethod
@@ -236,9 +261,12 @@ class Channel(ToDictable):
         Returns:
             bool: True if DM exists and it isnt expired.
         """
+        conn = connect(); cursor = conn.cursor();
         cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
         if cursor.rowcount == 0:
+            cursor.close();conn.close();
             return False
+        cursor.close();conn.close();
         return True
 
     @staticmethod
@@ -275,10 +303,13 @@ class Channel(ToDictable):
         Returns:
             list[ChatAuthor]: The list of users
         """
+        conn = connect(); cursor = conn.cursor();
         cursor.execute("SELECT chatusers.id, username FROM channelmembers,chatusers WHERE (channelmembers.channelId = %s && channelmembers.userid = chatusers.id);", (channelid,))
         retlist = []
-        for (id, name) in cursor:
-            retlist.append(ChatAuthor(id, name, f"api/users/{id}/avatar"))
+        for res in cursor.fetchall():
+            print(res);
+            retlist.append(ChatAuthor(res['id'], res['username'], f"api/users/{id}/avatar"))
+        cursor.close();conn.close();
         return retlist
 
     @staticmethod
@@ -299,14 +330,15 @@ class Channel(ToDictable):
         canAccessThisChannel = Channel.validate_access(channel, userid)
         if not canAccessThisChannel:
             return False
-
+        conn = connect(); cursor = conn.cursor();
         attachment_id = None
         if attachment != None:
             attachment_id = snowflakegen.__next__()
             cursor.execute("INSERT INTO attachments VALUES(%s,%s,%s);", (attachment_id, attachment, attachment_name))
 
         cursor.execute("INSERT INTO ChatMessages VALUES(%s,%s,%s,%s,%s);", (id, userid, msg, channel, attachment_id))
-        db.commit()
+        conn.commit();
+        cursor.close();conn.close();
         return True
 
     @staticmethod
@@ -321,7 +353,7 @@ class Channel(ToDictable):
         Returns:
             list[ChatMessageGroup]: The list of messages
         """
-
+        conn = connect(); cursor = conn.cursor();
         if lim > 100:
             lim = 100
         cursor.execute(
@@ -329,9 +361,9 @@ class Channel(ToDictable):
             (after, channel, lim),
         )
         retlist = []
-        for (id, userid, username, content, attachment) in cursor:
-            retlist.append(ChatMessageGroup(id, ChatAuthor(userid, username, f"api/users/{userid}/avatar"), [ChatMessage(id, content, attachment)]))
-
+        for res in cursor.fetchall():
+            retlist.append(ChatMessageGroup(res['Id'], ChatAuthor(res['ChatUsers.Id'], res['Username'], f"api/users/{res['ChatUsers.Id']}/avatar"), [ChatMessage(res['Id'], res['Content'], res['attachment'])]))
+        cursor.close();conn.close();
         return retlist
 
     @staticmethod
@@ -344,11 +376,14 @@ class Channel(ToDictable):
         Returns:
             Attachment: The attachment if found
         """
+        conn = connect(); cursor = conn.cursor();
         cursor.execute("SELECT id, file, filename FROM attachments WHERE id = %s;", (attachmentid,))
         if cursor.rowcount == 0:
+            cursor.close();conn.close();
             return None
         res = cursor.fetchone()
-        a = Attachment(res[0], res[1], res[2])
+        a = Attachment(res['id'], res['file'], res['filename'])
+        cursor.close();conn.close();
         return a
 
 

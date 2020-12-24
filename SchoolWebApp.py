@@ -55,18 +55,24 @@ def authenticate_user() -> int:
 ### CHAT
 @app.route("/api/channels", methods=["GET"])
 def get_channels():
+    print("auth user");
     userid = authenticate_user()
-    return jsonify(api.ChannelModel(api.Channel.get_channel_list(userid)).toDict())
+    print("getting channels");
+    chm = api.ChannelModel(api.Channel.get_channel_list(userid)).toDict();
+    print("got channels");
+    return jsonify(chm)
 
 
 @app.route("/api/channels/<channel>", methods=["GET"])
 def get_channel(channel):
     userid = authenticate_user()
+    print("getting channel");
 
     if not api.Channel.validate_access(channel, userid):
         abort(403)
 
     ch = api.Channel.get_channel(channel)
+    print("got channel");
     return jsonify(ch.toDict())
 
 
@@ -116,7 +122,7 @@ def get_user_list(channel):
     jlist = []
     for user in users:
         jlist.append(user.toDict())
-    return jsonify(jlist)
+    return jsonify({"users": jlist})
 
 
 @app.route("/api/channels/<channel>/messages", methods=["POST"])
@@ -303,6 +309,7 @@ def auth():
         resp = {"token": token}
         return jsonify(resp)
     except Exception as e:
+        raise e;
         return {"error": str(e)}, 403;
 
 @app.route("/api/authorizetoken", methods=["POST"])

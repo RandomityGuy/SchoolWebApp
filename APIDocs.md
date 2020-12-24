@@ -102,11 +102,11 @@ JSON Response:
 
 ```
 {
-    {
-        "avatarurl": str // The url to the avatar
-        "id": int // The id of the user
-        "name": str // The name of the user
-    }...
+    "users" = [{
+                    "avatarurl": str // The url to the avatar
+                    "id": int // The id of the user
+                    "name": str // The name of the user
+                }...]
 }
 ```
 

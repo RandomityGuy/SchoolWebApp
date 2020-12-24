@@ -31,7 +31,7 @@ class Videos:
             path (str): The path where the video is to be stored
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
+        global_cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
         db.commit()
 
     @staticmethod
@@ -44,9 +44,9 @@ class Videos:
         Returns:
             list[Video]: The list of videos
         """
-        cursor.execute("SELECT * FROM videos WHERE class=%s;", (studentclass,))
+        global_cursor.execute("SELECT * FROM videos WHERE class=%s;", (studentclass,))
         ret = []
-        for (id, studentclass, name, link, path) in cursor:
+        for (id, studentclass, name, link, path) in global_cursor:
             ret.append(Video(id, name, studentclass, link, path))
 
         return ret
@@ -62,9 +62,9 @@ class Videos:
         Returns:
             list[Video]: The list of videos
         """
-        cursor.execute("SELECT * FROM videos WHERE class=%s && path LIKE %s", (studentclass, folder))
+        global_cursor.execute("SELECT * FROM videos WHERE class=%s && path LIKE %s", (studentclass, folder))
         ret = []
-        for (id, studentclass, name, link, path) in cursor:
+        for (id, studentclass, name, link, path) in global_cursor:
             ret.append(Video(id, name, studentclass, link, path))
 
         return ret
@@ -81,9 +81,9 @@ class Videos:
             list[str]: The list of folder paths
         """
         regex = f"^{folder}\/[A-z0-9]*\/{{0,1}}"
-        cursor.execute("SELECT DISTINCT TRIM(TRAILING '/' FROM REGEXP_SUBSTR(path,%s)) FROM videos WHERE path REGEXP %s;", (regex, regex))
+        global_cursor.execute("SELECT DISTINCT TRIM(TRAILING '/' FROM REGEXP_SUBSTR(path,%s)) FROM videos WHERE path REGEXP %s;", (regex, regex))
         ret = []
-        for (folder,) in cursor:
+        for (folder,) in global_cursor:
             ret.append(folder)
         return ret
 
@@ -94,7 +94,7 @@ class Videos:
         Args:
             videoid (int): The video id
         """
-        cursor.execute("DELETE FROM videos WHERE id=%s", (videoid,))
+        global_cursor.execute("DELETE FROM videos WHERE id=%s", (videoid,))
         db.commit()
 
     @staticmethod
@@ -110,5 +110,5 @@ class Videos:
         """
         Videos.delete_video(id)
         # We'll just delete instead and add the new one cause its less lines of code
-        cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
+        global_cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
         db.commit()

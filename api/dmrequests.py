@@ -34,8 +34,8 @@ class DMRequest(ToDictable):
         Returns:
             bool: True if DM exists and it isnt expired.
         """
-        cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
-        if cursor.rowcount == 0:
+        global_cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
+        if global_cursor.rowcount == 0:
             return False
         return True
 
@@ -52,7 +52,7 @@ class DMRequest(ToDictable):
             int: The DM request id
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
+        global_cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
         db.commit()
         return id
 
@@ -66,9 +66,9 @@ class DMRequest(ToDictable):
         Returns:
             list[DMRequest]: The list of DM requests
         """
-        cursor.execute("SELECT * FROM dmrequests WHERE (by = %s && expires > CURDATE());", (for_user,))
+        global_cursor.execute("SELECT * FROM dmrequests WHERE (by = %s && expires > CURDATE());", (for_user,))
         L = []
-        for (id, to, by, content, expires) in cursor:
+        for (id, to, by, content, expires) in global_cursor:
             L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
         return L
 
@@ -82,9 +82,9 @@ class DMRequest(ToDictable):
         Returns:
             list[DMRequest]: The list of DM requests
         """
-        cursor.execute("SELECT * FROM dmrequests WHERE (to = %s && expires > CURDATE());", (for_user,))
+        global_cursor.execute("SELECT * FROM dmrequests WHERE (to = %s && expires > CURDATE());", (for_user,))
         L = []
-        for (id, to, by, content, expires) in cursor:
+        for (id, to, by, content, expires) in global_cursor:
             L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
         return L
 
@@ -98,10 +98,10 @@ class DMRequest(ToDictable):
         Returns:
             DMRequest: The DM request
         """
-        cursor.execute("SELECT * FROM dmrequests WHERE (id = %s && expires > CURDATE());", (id,))
-        if cursor.rowcount == 0:
+        global_cursor.execute("SELECT * FROM dmrequests WHERE (id = %s && expires > CURDATE());", (id,))
+        if global_cursor.rowcount == 0:
             return None
-        res = cursor.fetchone()
+        res = global_cursor.fetchone()
         return DMRequest(res[0], res[1], res[2], res[3], date.fromisoformat(res[4]))
 
     @staticmethod
@@ -126,5 +126,5 @@ class DMRequest(ToDictable):
         Args:
             id (int): The DM request id
         """
-        cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
+        global_cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
         db.commit()

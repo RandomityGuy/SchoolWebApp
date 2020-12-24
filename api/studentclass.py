@@ -13,9 +13,9 @@ class StudentClass:
         Returns:
             list[User]: The list of students
         """
-        cursor.execute("SELECT id, username, permissions FROM chatusers WHERE class=%s;", (classname,))
+        global_cursor.execute("SELECT id, username, permissions FROM chatusers WHERE class=%s;", (classname,))
         L = []
-        for (id, username, perms) in cursor:
+        for (id, username, perms) in global_cursor:
             L.append(User(id, username, perms, classname, f"api/users/{id}/avatar"))
         return L
 
@@ -28,9 +28,9 @@ class StudentClass:
         Returns:
             list[User]: The list of students
         """
-        cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) != %s));", (classname, Permissions.CLASS_T, Permissions.CLASS_T))
+        global_cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) != %s));", (classname, Permissions.CLASS_T, Permissions.CLASS_T))
         L = []
-        for (id, username, perms) in cursor:
+        for (id, username, perms) in global_cursor:
             L.append(User(id, username, perms, classname, f"api/users/{id}/avatar"))
         return L
 
@@ -43,9 +43,9 @@ class StudentClass:
         Returns:
             list[User]: The list of class teachers
         """
-        cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) == %s));", (classname, Permissions.CLASS_T, Permissions.CLASS_T))
+        global_cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) == %s));", (classname, Permissions.CLASS_T, Permissions.CLASS_T))
         L = []
-        for (id, username, perms) in cursor:
+        for (id, username, perms) in global_cursor:
             L.append(User(id, username, perms, classname, f"api/users/{id}/avatar"))
         return L
 
@@ -55,9 +55,9 @@ class StudentClass:
         Returns:
             list[User]: The list of staff members
         """
-        cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) == %s));", ("Staff", Permissions.SUPERUSER, Permissions.SUPERUSER))
+        global_cursor.execute("SELECT id, username, permissions FROM chatusers WHERE (class=%s && ((permissions & %s) == %s));", ("Staff", Permissions.SUPERUSER, Permissions.SUPERUSER))
         L = []
-        for (id, username, perms) in cursor:
+        for (id, username, perms) in global_cursor:
             L.append(User(id, username, perms, "Staff", f"api/users/{id}/avatar"))
         return L
 
@@ -67,8 +67,8 @@ class StudentClass:
         Returns:
             list[str]: The list of classes
         """
-        cursor.execute("SELECT DISTINCT class FROM chatusers")
+        global_cursor.execute("SELECT DISTINCT class FROM chatusers")
         L = []
-        for (res,) in cursor:
+        for (res,) in global_cursor:
             L.append(res)
         return L

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "rollup -c --environment entry:home & rollup -c --environment entry:index"
+    "compile": "rollup -c --environment entry:home & rollup -c --environment entry:index & rollup -c --environment entry:chat"
   },
   "author": "",
   "license": "ISC",

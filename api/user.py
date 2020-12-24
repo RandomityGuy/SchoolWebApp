@@ -1,4 +1,5 @@
 from __future__ import annotations
+from os import curdir
 from api.base import *
 
 
@@ -29,11 +30,17 @@ class User(ToDictable):
         Returns:
             str: The avatar data
         """
+        conn = connect();
+        cursor = conn.cursor();
         cursor.execute("SELECT avatar FROM chatusers WHERE Id=%s;", (userid,))
         if cursor.rowcount == 0:
+            cursor.close();
+            conn.close();
             return None
         else:
-            data = cursor.fetchone()[0]
+            data = cursor.fetchone()['avatar']
+            cursor.close();
+            conn.close();
             return data
 
     @staticmethod
@@ -44,8 +51,12 @@ class User(ToDictable):
             userid (int): The user id
             avatardata ([type]): The avatar binary data
         """
+        conn = connect();
+        cursor = conn.cursor();
         cursor.execute("UPDATE chatusers SET avatar = %s WHERE Id = %s;", (avatardata, userid))
-        db.commit()
+        conn.commit()
+        conn.close();
+        cursor.close();
 
     @staticmethod
     def get_user(userid: int) -> User:
@@ -57,12 +68,19 @@ class User(ToDictable):
         Returns:
             User: The user if found, else None
         """
+        conn = connect();
+        cursor = conn.cursor();
         cursor.execute("SELECT * FROM chatusers WHERE id = %s", (userid,))
         if cursor.rowcount == 0:
+            cursor.close();
+            conn.close();
             return None
         else:
             res = cursor.fetchone()
-            user = User(res[0], res[1], res[3], res[4], f"api/users/{userid}/avatar")
+            print(res);
+            user = User(res['Id'], res['Username'], res['permissions'], res['class'], f"api/users/{userid}/avatar")
+            cursor.close();
+            conn.close();
             return user
 
     @staticmethod
@@ -74,13 +92,17 @@ class User(ToDictable):
             username (str, optional): The new username. Defaults to None.
             permissions (int, optional): The new permissions. Defaults to None.
         """
+        conn = connect();
+        cursor = conn.cursor();
         if username != None:
             cursor.execute("UPDATE chatusers SET username=%s WHERE id=%s;", (username, userid))
         if permissions != None:
             cursor.execute("UPDATE chatusers SET permissions=%s WHERE id=%s;", (permissions, userid))
         if studentclass != None:
             cursor.execute("UPDATE chatusers SET class=%s WHERE id=%s;", (studentclass, userid))
-        db.commit()
+        cursor.close();
+        conn.commit()
+        conn.close();
 
     @staticmethod
     def delete_user(userid: int):
@@ -89,8 +111,12 @@ class User(ToDictable):
         Args:
             userid (int): The user id
         """
+        conn = connect();
+        cursor = conn.cursor();
         cursor.execute("DELETE FROM chatusers WHERE id=%s;", (userid,))
-        db.commit()
+        cursor.close();
+        conn.commit()
+        conn.close();
 
     @staticmethod
     def get_details(userid: int) -> str:
@@ -102,10 +128,17 @@ class User(ToDictable):
         Returns:
             str: the JSON details
         """
+        conn = connect();
+        cursor = conn.cursor();
         cursor.execute("SELECT data FROM userdetails WHERE userid=%s;",(userid,));
         if cursor.rowcount == 0:
+            cursor.close();
+            conn.close();
             return "{}";
-        return cursor.fetchone()[0];
+        data = cursor.fetchone()['data'];
+        cursor.close();
+        conn.close();
+        return data;
 
     @staticmethod
     def set_details(userid: int, details: str):
@@ -115,9 +148,13 @@ class User(ToDictable):
             userid (int): The user id
             details (str): the JSON user details
         """
+        conn = connect();
+        cursor = conn.cursor();
         cursor.execute("SELECT 1 FROM userdetails WHERE userid=%s;",(userid,));
         if cursor.rowcount == 0:
             cursor.execute("INSERT INTO userdetails VALUES(%s,%s,%s);",(snowflakegen.__next__(),userid,details));
         else:
             cursor.execute("UPDATE userdetails SET details=%s WHERE userid=%s;",(details,userid));
-        db.commit();
+        cursor.close();
+        conn.commit();
+        conn.close();

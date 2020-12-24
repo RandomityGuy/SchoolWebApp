@@ -22,32 +22,40 @@ class Auth:
         Returns:
             str: The token if success
         """
-
+        conn = connect();
+        cursor = conn.cursor();
         # !!! WARNING : SEND A HASHED PASSWORD FROM THE SITE, HASH THE PASSWORD WITHIN THE BROWSER AND THEN SEND IT HERE
-
         cursor.execute("SELECT id,Username,password FROM chatusers WHERE Username = %s;", (username,))
 
-        if cursor.rowcount == 0:
+        data = cursor.fetchall();
+
+        if len(data) == 0:
+            cursor.close();conn.close();
             raise Exception("Invalid username")
 
-        data = cursor.fetchone()
+        data = data[0];
 
-        if data[2] == None:
+        if data['password'] == None:
+            cursor.close();conn.close();
             raise Exception("No password set")
 
-        if bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd.encode('utf-8')).digest()), data[2].encode('utf-8')):
-            cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && user=%s);", (data[0],))
-            if cursor.rowcount == 0:
+        if bcrypt.checkpw(base64.b64encode(hashlib.sha256(pwd.encode('utf-8')).digest()), data['password'].encode('utf-8')):
+            cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && user=%s);", (data['id'],))
+            res = cursor.fetchall();
+            if len(res) == 0:
                 # Create new token
                 token = secrets.token_hex(128)
                 id = snowflakegen.__next__()
-                cursor.execute("INSERT INTO tokens VALUES(%s,%s,DATE_ADD(CURDATE(), INTERVAL 1 MONTH),%s);", (id, token, data[0]))
-                db.commit()
+                cursor.execute("INSERT INTO tokens VALUES(%s,%s,DATE_ADD(CURDATE(), INTERVAL 1 MONTH),%s);", (id, token, data['id']))
+                conn.commit()
+                cursor.close();conn.close();
                 return token
             else:
-                token = cursor.fetchone()
+                token = res[0]['token'];
+                cursor.close();conn.close();
                 return token
 
+        cursor.close();conn.close();
         raise Exception("Invalid password")
 
     @staticmethod
@@ -62,12 +70,14 @@ class Auth:
         Returns:
             str: The token if sucess
         """
+        conn = connect();
+        cursor = conn.cursor();
         id = snowflakegen.__next__()
         hash = bcrypt.hashpw(base64.b64encode(hashlib.sha256(pwd.encode('utf-8')).digest()), bcrypt.gensalt())
 
         cursor.execute("INSERT INTO chatusers VALUES(%s,%s,%s,%s,NULL,NULL);", (id, username, hash, permissions))
-        db.commit()
-
+        conn.commit()
+        cursor.close();conn.close();
         return Auth.login(username, pwd)
 
     @staticmethod
@@ -80,9 +90,16 @@ class Auth:
         Returns:
             bool: True if success
         """
+        conn = connect();
+        cursor = conn.cursor();
+        print("authorizing token");
         cursor.execute("SELECT token FROM tokens WHERE (expires > CURDATE() && token=%s);", (token,))
-        if cursor.rowcount == 0:
+        res = cursor.fetchall();
+        print(res);
+        if len(res) == 0:
+            cursor.close();conn.close();
             return False
+        cursor.close();conn.close();
         return True
 
     @staticmethod
@@ -95,10 +112,15 @@ class Auth:
         Returns:
             int: The permissions, None if token is expired/doesnt exist
         """
-        res = cursor.execute("SELECT permissions FROM tokens,chatusers WHERE (tokens.user = chatusers.id && token = %s);", (token,))
-        if cursor.rowcount == 0:
+        conn = connect();
+        cursor = conn.cursor();
+        cursor.execute("SELECT permissions FROM tokens,chatusers WHERE (tokens.user = chatusers.id && token = %s);", (token,))
+        res = cursor.fetchall();
+        if len(res) == 0:
+            cursor.close();conn.close();
             return None
-        perms = res.fetchone()
+        perms = res[0]['permissions'];
+        cursor.close();conn.close();
         return perms
 
     @staticmethod
@@ -111,11 +133,17 @@ class Auth:
         Returns:
             int: The permissions
         """
-        res = cursor.execute("SELECT permissions FROM chatusers WHERE id = %s;", userid)
-        if cursor.rowcount == 0:
+        conn = connect();
+        cursor = conn.cursor();
+        cursor.execute("SELECT permissions FROM chatusers WHERE id = %s;", (userid,))
+        res = cursor.fetchall();
+        if len(res) == 0:
+            cursor.close();conn.close();
             return None
-        perms = res.fetchone()
-        return perms
+        perms = res[0];
+        print("got perms");
+        cursor.close();conn.close();
+        return perms['permissions'];
 
     @staticmethod
     def get_token_user_id(token: str) -> int:
@@ -127,10 +155,19 @@ class Auth:
         Returns:
             int: The user id, None if token is expired/doesnt exist
         """
+        conn = connect();
+        cursor = conn.cursor();
+        print("get_token_user_id");
         if Auth.authorize(token):
+            print("token authorized");
             query = "SELECT user FROM tokens WHERE token = %s";
             cursor.execute(query, (token,))
-            if cursor.rowcount == 0:
+            res = cursor.fetchall();
+            print(res);
+            if len(res) == 0:
+                cursor.close();conn.close();
                 return None
-            return cursor.fetchone()[0]
+            cursor.close();conn.close();
+            return res[0]['user']
+        cursor.close();conn.close();
         return None

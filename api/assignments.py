@@ -53,7 +53,7 @@ class Assignment(ToDictable):
             int: The assigment id
         """
         id = snowflakegen.__next__()
-        cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s);", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
+        global_cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s);", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
         db.commit()
         return id
 
@@ -69,11 +69,11 @@ class Assignment(ToDictable):
         Returns:
             [type]: True if success
         """
-        cursor.execute("SELECT id FROM assignments WHERE (submission > CURDATE() && id == %s);", (assignmentid,))
-        if cursor.rowcount == 0:
+        global_cursor.execute("SELECT id FROM assignments WHERE (submission > CURDATE() && id == %s);", (assignmentid,))
+        if global_cursor.rowcount == 0:
             return False
             # You uploaded it too late
-        cursor.execute("INSERT INTO assignmentinfo VALUES(%s,%s,%s,%s,%s,%s);", (snowflakegen.__next__(), assignmentid, userid, 0, Assignment.UPLOADED, attachment, attachmentname))
+        global_cursor.execute("INSERT INTO assignmentinfo VALUES(%s,%s,%s,%s,%s,%s);", (snowflakegen.__next__(), assignmentid, userid, 0, Assignment.UPLOADED, attachment, attachmentname))
         db.commit()
         return True
 
@@ -84,7 +84,7 @@ class Assignment(ToDictable):
         Args:
             assignmentinfoid (int): The assigment info id
         """
-        cursor.execute("UPDATE assignmentinfo SET status=2 WHERE id = %s;", (assignmentinfoid,))
+        global_cursor.execute("UPDATE assignmentinfo SET status=2 WHERE id = %s;", (assignmentinfoid,))
         db.commit()
 
     @staticmethod
@@ -94,7 +94,7 @@ class Assignment(ToDictable):
         Args:
             assignmentinfoid (int): The assigment info id
         """
-        cursor.execute("UPDATE assignmentinfo SET status=3 WHERE id = %s;", (assignmentinfoid,))
+        global_cursor.execute("UPDATE assignmentinfo SET status=3 WHERE id = %s;", (assignmentinfoid,))
         db.commit()
 
     @staticmethod
@@ -105,7 +105,7 @@ class Assignment(ToDictable):
             assignmentinfoid (int): The assigment info id
             status (int): The status code of the assigment
         """
-        cursor.execute("UPDATE assignmentinfo SET status=%s WHERE id = %s;", (status, assignmentinfoid))
+        global_cursor.execute("UPDATE assignmentinfo SET status=%s WHERE id = %s;", (status, assignmentinfoid))
         db.commit()
 
     @staticmethod
@@ -118,10 +118,10 @@ class Assignment(ToDictable):
         Returns:
             Assignment: The assigment if success
         """
-        cursor.execute("SELECT * FROM assignments WHERE id = %s;", (assignmentid,))
-        if cursor.rowcount == 0:
+        global_cursor.execute("SELECT * FROM assignments WHERE id = %s;", (assignmentid,))
+        if global_cursor.rowcount == 0:
             return None
-        res = cursor.fetchone()
+        res = global_cursor.fetchone()
         assignment = Assignment(res[0], res[1], res[2], res[5], res[4], res[3])
         return assignment
 
@@ -135,9 +135,9 @@ class Assignment(ToDictable):
         Returns:
             list: The list of assigments
         """
-        cursor.execute("SELECT * FROM assignments WHERE class = %s;", (studentclass,))
+        global_cursor.execute("SELECT * FROM assignments WHERE class = %s;", (studentclass,))
         L = []
-        for (id, studentclass, content, attachment, attachmentname, submission) in cursor:
+        for (id, studentclass, content, attachment, attachmentname, submission) in global_cursor:
             L.append(Assignment(id, studentclass, content, submission, attachmentname, attachment))
         return L
 
@@ -151,9 +151,9 @@ class Assignment(ToDictable):
         Returns:
             list[AssignmentInfo]: The submitted assigment data
         """
-        cursor.execute("SELECT * FROM assignmentinfo WHERE assignmentid = %s;", (assignmentid,))
+        global_cursor.execute("SELECT * FROM assignmentinfo WHERE assignmentid = %s;", (assignmentid,))
         L = []
-        for (id, aid, userid, status, attachment, attachmentname) in cursor:
+        for (id, aid, userid, status, attachment, attachmentname) in global_cursor:
             L.append(AssignmentInfo(id, aid, userid, status, attachment, attachmentname))
         return L
 
@@ -167,10 +167,10 @@ class Assignment(ToDictable):
         Returns:
             AssignmentInfo: The submitted assignment data
         """
-        cursor.execute("SELECT * FROM assignmentinfo WHERE id = %s;", (assignmentinfoid,))
-        if cursor.rowcount == 0:
+        global_cursor.execute("SELECT * FROM assignmentinfo WHERE id = %s;", (assignmentinfoid,))
+        if global_cursor.rowcount == 0:
             return None
-        res = cursor.fetchone()
+        res = global_cursor.fetchone()
         return AssignmentInfo(res[0], res[1], res[2], res[3], res[4], res[5])
 
     def toDict(self):

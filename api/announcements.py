@@ -30,7 +30,7 @@ class Announcements:
         perms = Auth.get_permissions(user)
         if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
             id = snowflakegen.__next__()
-            cursor.execute("INSERT INTO announcements VALUES(%s,%s,%s,%s);", (id, user, destclass, text))
+            global_cursor.execute("INSERT INTO announcements VALUES(%s,%s,%s,%s);", (id, user, destclass, text))
             db.commit()
             return id
         else:
@@ -50,7 +50,7 @@ class Announcements:
         perms = Auth.get_permissions(user)
         if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
             id = snowflakegen.__next__()
-            cursor.execute("DELETE FROM announcements WHERE id = %s;", (announcementid,))
+            global_cursor.execute("DELETE FROM announcements WHERE id = %s;", (announcementid,))
             db.commit()
             return True
         else:
@@ -66,8 +66,8 @@ class Announcements:
         Returns:
             list[Announcement]: The list of announcements
         """
-        cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;", (user,))
-        res = cursor.fetchall()
+        global_cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;", (user,))
+        res = global_cursor.fetchall()
         L = []
         for (id, byuser, clas, content) in res:
             L.append(Announcement(id, byuser, clas, content))
@@ -84,7 +84,7 @@ class Announcements:
         Returns:
             list[Announcement]: The list of announcements
         """
-        res = cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;", (userclass,))
+        res = global_cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;", (userclass,))
 
         L = []
         for (id, byuser, clas, content) in res:

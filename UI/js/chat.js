@@ -181,7 +181,18 @@
           channels.push(channel);
           set_channel_sidebar();
           toggleAddChannel();
-      });
+      }, create_dm_error);
+  }
+  function create_dm_error() {
+      popup_channel_input.classList.add("redBorders");
+      popup_channel_input.value = "";
+      popup_channel_input.placeholder = "Invalid User ID";
+      popup_channel_input.addEventListener('click', create_dm_error_end);
+  }
+  function create_dm_error_end() {
+      popup_channel_input.classList.remove("redBorders");
+      popup_channel_input.placeholder = "User ID";
+      popup_channel_input.removeEventListener('click', create_dm_error_end);
   }
   function add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content, scroll = false) {
       let div = document.createElement('div');

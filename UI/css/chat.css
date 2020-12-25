@@ -359,3 +359,7 @@ timestamp {
   opacity: 0.1;
   pointer-events: none;
 }
+
+.redBorders {
+    border-bottom: 1px solid red !important;
+}

@@ -48,7 +48,7 @@ let lastmsgid: string = null;
 
 token = localStorage.getItem('token');
 id = localStorage.getItem('id');
-set_channel_sidebar();
+setChannelSidebar();
 
 panel_profile.addEventListener('click', (e) => {
     toggleUserDetails();
@@ -63,18 +63,18 @@ add_channel.addEventListener('click', (e) => toggleAddChannel());
 popup_channel_back.addEventListener('click', (e) => toggleAddChannel());
 
 popup_channel_submit.addEventListener('click', (e) => {
-    create_dm(parseInt(popup_channel_input.value));
+    createDM(parseInt(popup_channel_input.value));
 });
 
 send_button.addEventListener('click', (e) => {
-    send_chat_message(send_box.value);
+    sendChatMessage(send_box.value);
     send_box.value = "";
 });
 
 send_box.addEventListener('keydown', (e) => {
     if (e.key == "Enter") {
         e.preventDefault();
-        send_chat_message(send_box.value);
+        sendChatMessage(send_box.value);
         send_box.value = "";
     }
 })
@@ -86,13 +86,13 @@ function toggleUserDetails() {
     }
 }
 
-function set_channel(channel_index: number) {
+function setChannel(channel_index: number) {
     current_channel = channel_index;
-    set_channel_data();
-    get_chat();
+    setChannelData();
+    getChat();
 }
 
-function set_channel_sidebar() {
+function setChannelSidebar() {
     channel_list.innerHTML = "";
     fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
         channels = [];
@@ -105,7 +105,7 @@ function set_channel_sidebar() {
             channel_div.dataset.id = element.id.toString();
             channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
             channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
-            channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
+            channel_div.addEventListener('click', (e) => setChannel(parseInt(channel_div.id)));
 
             if ((element.flags & 1) == 1) {
                 fetch(`/api/channels/${element.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
@@ -133,12 +133,12 @@ function set_channel_sidebar() {
 
         });
         current_channel = 0;
-        set_channel_data();
-        get_chat();
+        setChannelData();
+        getChat();
     });
 }
 
-function set_channel_data() {
+function setChannelData() {
     let channel = channels[current_channel];
 
     fetch(`/api/channels/${channel.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
@@ -168,7 +168,7 @@ function set_channel_data() {
         
 }
 
-function get_chat() {
+function getChat() {
     let channel = channels[current_channel];
     main_panel_messages.innerHTML = "";
 
@@ -179,7 +179,7 @@ function get_chat() {
             let sender_avatar = element.author.avatarurl;
             let message_id = element.id;
             let message_content = element.messages[0].content;
-            add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content);    
+            addChatMessage(sender_name, sender_id, sender_avatar, message_id, message_content);    
         });
         lastmsgid = data.lastmessageid;
     });
@@ -200,7 +200,7 @@ function show_user_details(id: string) {
     });
 }
 
-function create_dm(id: number) {
+function createDM(id: number) {
     fetch(`/api/users/${id}/DM?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
         let channel_id = parseInt(data.id);
         let channel_name = data.channel_name;
@@ -209,19 +209,33 @@ function create_dm(id: number) {
         let channel = new Channel(channel_id.toString(), channel_name, flags);
         channels.push(channel);
 
-        set_channel_sidebar();
+        setChannelSidebar();
         toggleAddChannel();
-    });
+    }, createDMError);
 }
 
-function add_chat_message(sender_name: string, sender_id: string, sender_avatar: string, message_id: string, message_content: string, scroll: boolean = false) {
+function createDMError() {
+    popup_channel_input.classList.add("redBorders");
+    popup_channel_input.value = "";
+    popup_channel_input.placeholder = "Invalid User ID";
+    popup_channel_input.addEventListener('click', createDMErrorEnd);
+}
+
+function createDMErrorEnd() {
+    popup_channel_input.classList.remove("redBorders");
+    popup_channel_input.placeholder = "User ID";
+    popup_channel_input.removeEventListener('click', createDMErrorEnd);
+}
+
+
+function addChatMessage(sender_name: string, sender_id: string, sender_avatar: string, message_id: string, message_content: string, scroll: boolean = false) {
     let div = document.createElement('div');
     let metadata = document.createElement('metadata');
     let user = document.createElement('user');
     metadata.addEventListener('click', (e) => show_user_details(sender_id));
     user.textContent = sender_name;
     let timestamp = document.createElement('timestamp');
-    let utc = snowflake_to_timestamp(BigInt(message_id));
+    let utc = snowflakeToTimestamp(BigInt(message_id));
     timestamp.textContent = new Date(utc * 1000).toString();
     metadata.appendChild(user);
     metadata.appendChild(timestamp);
@@ -243,13 +257,13 @@ function add_chat_message(sender_name: string, sender_id: string, sender_avatar:
     }
 }
 
-function send_chat_message(content: string) {
+function sendChatMessage(content: string) {
     let body = { message: content };
     fetch(`/api/channels/${channels[current_channel].id}/messages?` + new URLSearchParams({ token: token.toString() }), {
         method: "POST",
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
-    }).then(e => update_chat(true));
+    }).then(e => updateChat(true));
 }
 
 function showBorder(element: HTMLDivElement) {
@@ -260,7 +274,7 @@ function hideBorder(element: HTMLDivElement) {
   element.classList.remove('border');
 }
 
-function snowflake_to_timestamp(_id: bigint) {
+function snowflakeToTimestamp(_id: bigint) {
     _id = _id >> BigInt(22);
     _id += BigInt(1142974214000);
     _id = _id / BigInt(1000);
@@ -272,7 +286,7 @@ function toggleAddChannel() {
     document.getElementById('popup-add-channel').classList.toggle('hide');
 }
 
-function update_chat(scroll: boolean = false) {
+function updateChat(scroll: boolean = false) {
     fetch(`/api/channels/${channels[current_channel].id}/messages?after=${lastmsgid}&` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
         data.messages.forEach((element: { author: { name: any; id: any; avatarurl: any; }; id: any; messages: { content: any; }[]; }) => {
             let sender_name = element.author.name;
@@ -280,7 +294,7 @@ function update_chat(scroll: boolean = false) {
             let sender_avatar = element.author.avatarurl;
             let message_id = element.id;
             let message_content = element.messages[0].content;
-            add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content, scroll);   
+            addChatMessage(sender_name, sender_id, sender_avatar, message_id, message_content, scroll);   
         });
         if (data.lastmessageid != -1) {
             lastmsgid = data.lastmessageid;
@@ -288,4 +302,4 @@ function update_chat(scroll: boolean = false) {
     });
 }
 
-let update_interval = setInterval(update_chat, 3000);
+let update_interval = setInterval(updateChat, 3000);

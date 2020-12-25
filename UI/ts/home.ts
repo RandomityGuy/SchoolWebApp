@@ -6,7 +6,7 @@ const logout_button = document.querySelector("#logout") as HTMLButtonElement;
 const chat_button = document.querySelector('#chat-button') as HTMLButtonElement;
 
 window.addEventListener('load', (e) => {
-    populate_user_details();
+    populateUserDetails();
 });
 
 logout_button.addEventListener('click', (e) => {
@@ -19,7 +19,7 @@ chat_button.addEventListener('click', (e) => {
     window.location.href = 'chat';
 })
 
-export function populate_user_details() {
+function populateUserDetails() {
     let tok = localStorage.getItem('token');
 
     fetch("/api/users/@me?" + new URLSearchParams({ token: tok.toString() })).then(response => response.json()).then(data => {

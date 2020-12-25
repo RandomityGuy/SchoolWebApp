@@ -299,7 +299,7 @@ def auth():
         resp = {"token": token}
         return jsonify(resp)
     except Exception as e:
-        raise e;
+        # raise e;
         return {"error": str(e)}, 403;
 
 @app.route("/api/authorizetoken", methods=["POST"])

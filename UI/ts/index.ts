@@ -7,19 +7,19 @@ const password_text = document.querySelector("#pass") as HTMLInputElement;
 const sign_in_button = document.querySelector("#signIn") as HTMLButtonElement;
 
 login_continue.addEventListener('click',(e) => {
-    sign_in()
-    attempt_auto_sign_in()
+    signIn()
+    attemptAutoSignIn()
 })
 
 login_back.addEventListener('click', (e) => {
-    not_sign_in()
+    notSignIn()
 })
 
 sign_in_button.addEventListener('click', (e) => {
-    attempt_sign_in()
+    attemptSignIn()
 })
 
-function sign_in() {
+function signIn() {
     document.getElementById('middleBox').classList.toggle('middle-box-anim');
     document.getElementById('logoId').classList.toggle('logo-anim');
     document.getElementById('animbox').style.opacity = "0";
@@ -31,7 +31,7 @@ function sign_in() {
     
 }
 
-function not_sign_in() {
+function notSignIn() {
     document.getElementById('middleBox').classList.toggle('middle-box-anim');
     document.getElementById('logoId').classList.toggle('logo-anim');
     document.getElementById('animbox').style.opacity = "1";
@@ -42,23 +42,23 @@ function not_sign_in() {
     document.getElementById('animbox').style.pointerEvents = "auto";   
 }
 
-function attempt_auto_sign_in() {
+function attemptAutoSignIn() {
     let tok = localStorage.getItem('token');
     let body = { token: tok };
     if (tok !== null) {
         fetch('./api/authorizetoken', {
             method: "POST",
             body: JSON.stringify(body),
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
         }).then((e) => {
             if (e.status != 403) {
-                on_sign_in();
+                onSignIn();
             }
-        })
+        }, (f) => onError());
     }
 }
 
-function attempt_sign_in() {
+function attemptSignIn() {
     let username = username_text.value;
     let password = password_text.value;
 
@@ -72,13 +72,37 @@ function attempt_sign_in() {
         if (e.status != 403) {
             e.json().then(resp => {
                 localStorage.setItem('token', resp.token);
-                on_sign_in()
+                onSignIn()
             });
+        } else {
+            onError();
         }
-    });
+    }, (f) => onError());
 }
 
-function on_sign_in() {
+function onSignIn() {
     window.location.href = 'home';
     // Do whatever you want here after sign in
+}
+
+function onError() {
+    username_text.classList.add('redBorders');
+    password_text.classList.add('redBorders');
+    username_text.placeholder = "Invalid credentials";
+    username_text.value = "";
+    password_text.placeholder = "Invalid credentials";
+    password_text.value = "";
+    username_text.addEventListener('click', onErrorEnd);
+    password_text.addEventListener('click', onErrorEnd);
+
+}
+
+function onErrorEnd() {
+    username_text.classList.remove('redBorders');
+    password_text.classList.remove('redBorders');
+    username_text.placeholder = "Username";
+    password_text.placeholder = "Password";
+    username_text.removeEventListener('click', onErrorEnd);
+    password_text.removeEventListener('click', onErrorEnd);
+
 }

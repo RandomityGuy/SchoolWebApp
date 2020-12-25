@@ -48,7 +48,7 @@
                 if (e.status != 403) {
                     on_sign_in();
                 }
-            });
+            }, (f) => on_error());
         }
     }
     function attempt_sign_in() {
@@ -66,11 +66,32 @@
                     on_sign_in();
                 });
             }
-        });
+            else {
+                on_error();
+            }
+        }, (f) => on_error());
     }
     function on_sign_in() {
         window.location.href = 'home';
         // Do whatever you want here after sign in
+    }
+    function on_error() {
+        username_text.classList.add('redBorders');
+        password_text.classList.add('redBorders');
+        username_text.placeholder = "Invalid credentials";
+        username_text.value = "";
+        password_text.placeholder = "Invalid credentials";
+        password_text.value = "";
+        username_text.addEventListener('click', on_error_end);
+        password_text.addEventListener('click', on_error_end);
+    }
+    function on_error_end() {
+        username_text.classList.remove('redBorders');
+        password_text.classList.remove('redBorders');
+        username_text.placeholder = "Username";
+        password_text.placeholder = "Password";
+        username_text.removeEventListener('click', on_error_end);
+        password_text.removeEventListener('click', on_error_end);
     }
 
 }());

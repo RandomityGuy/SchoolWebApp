@@ -181,3 +181,7 @@ input:focus {
   border: 0.5px solid var(--accent);
   color: var(--accent);
 }
+
+.redBorders {
+  border-bottom: 1px solid red !important;
+}

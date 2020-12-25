@@ -24,6 +24,7 @@ class DMRequest(ToDictable):
         return D
 
     @staticmethod
+    @api_func
     def dm_exists(to_user: int, by_user: int) -> bool:
         """Check if a DM request between two users exists and/or it isnt expired
 
@@ -34,12 +35,13 @@ class DMRequest(ToDictable):
         Returns:
             bool: True if DM exists and it isnt expired.
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
-        if global_cursor.rowcount == 0:
+        cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
+        if cursor.rowcount == 0:
             return False
         return True
 
     @staticmethod
+    @api_func
     def request_dm(to_user: int, by_user: int, content: str) -> int:
         """Request a DM to be done to a user by a user.
 
@@ -52,11 +54,12 @@ class DMRequest(ToDictable):
             int: The DM request id
         """
         id = snowflakegen.__next__()
-        global_cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
-        db.commit()
+        cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
+        conn.commit()
         return id
 
     @staticmethod
+    @api_func
     def get_sent_dm_requests(for_user: int) -> list[DMRequest]:
         """Gets a list of DM requests for a given user
 
@@ -66,13 +69,14 @@ class DMRequest(ToDictable):
         Returns:
             list[DMRequest]: The list of DM requests
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE (by = %s && expires > CURDATE());", (for_user,))
+        cursor.execute("SELECT * FROM dmrequests WHERE (by = %s && expires > CURDATE());", (for_user,))
         L = []
-        for (id, to, by, content, expires) in global_cursor:
+        for (id, to, by, content, expires) in cursor:
             L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
         return L
 
     @staticmethod
+    @api_func
     def get_dm_requests(for_user: int) -> list[DMRequest]:
         """Gets a list of DM requests for a given user
 
@@ -82,13 +86,14 @@ class DMRequest(ToDictable):
         Returns:
             list[DMRequest]: The list of DM requests
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE (to = %s && expires > CURDATE());", (for_user,))
+        cursor.execute("SELECT * FROM dmrequests WHERE (to = %s && expires > CURDATE());", (for_user,))
         L = []
-        for (id, to, by, content, expires) in global_cursor:
+        for (id, to, by, content, expires) in cursor:
             L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
         return L
 
     @staticmethod
+    @api_func
     def get_dm_request(id: int) -> DMRequest:
         """Gets a specific DM request from its id
 
@@ -98,13 +103,14 @@ class DMRequest(ToDictable):
         Returns:
             DMRequest: The DM request
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE (id = %s && expires > CURDATE());", (id,))
-        if global_cursor.rowcount == 0:
+        cursor.execute("SELECT * FROM dmrequests WHERE (id = %s && expires > CURDATE());", (id,))
+        if cursor.rowcount == 0:
             return None
-        res = global_cursor.fetchone()
+        res = cursor.fetchone()
         return DMRequest(res[0], res[1], res[2], res[3], date.fromisoformat(res[4]))
 
     @staticmethod
+    @api_func
     def accept_dm(id: int) -> int:
         """Accepts a DM request and returns the DM channel created
 
@@ -120,11 +126,12 @@ class DMRequest(ToDictable):
         return Channel.create_DM(req.by_user, req.to_user)
 
     @staticmethod
+    @api_func
     def reject_dm(id: int):
         """Rejects a DM request
 
         Args:
             id (int): The DM request id
         """
-        global_cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
-        db.commit()
+        cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
+        conn.commit()

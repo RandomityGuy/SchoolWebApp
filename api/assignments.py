@@ -39,6 +39,7 @@ class Assignment(ToDictable):
         self.attachmentname = attachmentname
 
     @staticmethod
+    @api_func
     def create_assignment(studentclass: str, content: str, duedate: datetime.date, attachmentname: str = None, attachment=None) -> int:
         """Creates an assignment for the given class of contents and due date with optional attachment
 
@@ -53,11 +54,12 @@ class Assignment(ToDictable):
             int: The assigment id
         """
         id = snowflakegen.__next__()
-        global_cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s);", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
-        db.commit()
+        cursor.execute("INSERT INTO assignments VALUES(%s,%s,%s,%s,%s,%s);", (id, studentclass, content, attachment, attachmentname, duedate.isoformat()))
+        conn.commit()
         return id
 
     @staticmethod
+    @api_func
     def upload_assignment(userid: int, assignmentid: int, attachmentname: str, attachment) -> bool:
         """Submit an assigment
 
@@ -69,35 +71,38 @@ class Assignment(ToDictable):
         Returns:
             [type]: True if success
         """
-        global_cursor.execute("SELECT id FROM assignments WHERE (submission > CURDATE() && id == %s);", (assignmentid,))
-        if global_cursor.rowcount == 0:
+        cursor.execute("SELECT id FROM assignments WHERE (submission > CURDATE() && id == %s);", (assignmentid,))
+        if cursor.rowcount == 0:
             return False
             # You uploaded it too late
-        global_cursor.execute("INSERT INTO assignmentinfo VALUES(%s,%s,%s,%s,%s,%s);", (snowflakegen.__next__(), assignmentid, userid, 0, Assignment.UPLOADED, attachment, attachmentname))
-        db.commit()
+        cursor.execute("INSERT INTO assignmentinfo VALUES(%s,%s,%s,%s,%s,%s);", (snowflakegen.__next__(), assignmentid, userid, 0, Assignment.UPLOADED, attachment, attachmentname))
+        conn.commit()
         return True
 
     @staticmethod
+    @api_func
     def mark_complete(assignmentinfoid: int):
         """Mark a given assigment by the student as complete
 
         Args:
             assignmentinfoid (int): The assigment info id
         """
-        global_cursor.execute("UPDATE assignmentinfo SET status=2 WHERE id = %s;", (assignmentinfoid,))
-        db.commit()
+        cursor.execute("UPDATE assignmentinfo SET status=2 WHERE id = %s;", (assignmentinfoid,))
+        conn.commit()
 
     @staticmethod
+    @api_func
     def mark_incomplete(assignmentinfoid: int):
         """Mark a given assigment by the student as incomplete
 
         Args:
             assignmentinfoid (int): The assigment info id
         """
-        global_cursor.execute("UPDATE assignmentinfo SET status=3 WHERE id = %s;", (assignmentinfoid,))
-        db.commit()
+        cursor.execute("UPDATE assignmentinfo SET status=3 WHERE id = %s;", (assignmentinfoid,))
+        conn.commit()
 
     @staticmethod
+    @api_func
     def mark_status(assignmentinfoid: int, status: int):
         """Mark a given assigment by the student as given status
 
@@ -105,10 +110,11 @@ class Assignment(ToDictable):
             assignmentinfoid (int): The assigment info id
             status (int): The status code of the assigment
         """
-        global_cursor.execute("UPDATE assignmentinfo SET status=%s WHERE id = %s;", (status, assignmentinfoid))
-        db.commit()
+        cursor.execute("UPDATE assignmentinfo SET status=%s WHERE id = %s;", (status, assignmentinfoid))
+        conn.commit()
 
     @staticmethod
+    @api_func
     def get_assignment(assignmentid: int) -> Assignment:
         """Gets an assignment by its id
 
@@ -118,14 +124,15 @@ class Assignment(ToDictable):
         Returns:
             Assignment: The assigment if success
         """
-        global_cursor.execute("SELECT * FROM assignments WHERE id = %s;", (assignmentid,))
-        if global_cursor.rowcount == 0:
+        cursor.execute("SELECT * FROM assignments WHERE id = %s;", (assignmentid,))
+        if cursor.rowcount == 0:
             return None
-        res = global_cursor.fetchone()
+        res = cursor.fetchone()
         assignment = Assignment(res[0], res[1], res[2], res[5], res[4], res[3])
         return assignment
 
     @staticmethod
+    @api_func
     def get_assignments_for_class(studentclass: str) -> list[Assignment]:
         """Gets an assignment by the class
 
@@ -135,13 +142,14 @@ class Assignment(ToDictable):
         Returns:
             list: The list of assigments
         """
-        global_cursor.execute("SELECT * FROM assignments WHERE class = %s;", (studentclass,))
+        cursor.execute("SELECT * FROM assignments WHERE class = %s;", (studentclass,))
         L = []
-        for (id, studentclass, content, attachment, attachmentname, submission) in global_cursor:
+        for (id, studentclass, content, attachment, attachmentname, submission) in cursor:
             L.append(Assignment(id, studentclass, content, submission, attachmentname, attachment))
         return L
 
     @staticmethod
+    @api_func
     def get_submitted_assignments(assignmentid: int) -> list[AssignmentInfo]:
         """Gets a list of submitted assigment data
 
@@ -151,13 +159,14 @@ class Assignment(ToDictable):
         Returns:
             list[AssignmentInfo]: The submitted assigment data
         """
-        global_cursor.execute("SELECT * FROM assignmentinfo WHERE assignmentid = %s;", (assignmentid,))
+        cursor.execute("SELECT * FROM assignmentinfo WHERE assignmentid = %s;", (assignmentid,))
         L = []
-        for (id, aid, userid, status, attachment, attachmentname) in global_cursor:
+        for (id, aid, userid, status, attachment, attachmentname) in cursor:
             L.append(AssignmentInfo(id, aid, userid, status, attachment, attachmentname))
         return L
 
     @staticmethod
+    @api_func
     def get_submitted_assignment(assignmentinfoid: int) -> AssignmentInfo:
         """Gets the submitted assignment data by the id
 
@@ -167,10 +176,10 @@ class Assignment(ToDictable):
         Returns:
             AssignmentInfo: The submitted assignment data
         """
-        global_cursor.execute("SELECT * FROM assignmentinfo WHERE id = %s;", (assignmentinfoid,))
-        if global_cursor.rowcount == 0:
+        cursor.execute("SELECT * FROM assignmentinfo WHERE id = %s;", (assignmentinfoid,))
+        if cursor.rowcount == 0:
             return None
-        res = global_cursor.fetchone()
+        res = cursor.fetchone()
         return AssignmentInfo(res[0], res[1], res[2], res[3], res[4], res[5])
 
     def toDict(self):

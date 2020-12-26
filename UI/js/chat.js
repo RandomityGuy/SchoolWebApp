@@ -5,6 +5,7 @@
   const popup_details_class = document.querySelector("#popup-user-detail-class");
   const popup_details_id = document.querySelector("#popup-user-detail-id");
   const popup_details_avatar = document.querySelector("#popup-user-detail-avatar");
+  const popup_details_dm = document.querySelector("#popup-user-detail-add");
   const channel_header = document.querySelector("#main-panel-profile-name");
   const panel_profile = document.querySelector("#main-panel-profile");
   const popup_details_back = document.querySelector("#popup-user-detail-back");
@@ -38,41 +39,45 @@
   let lastmsgid = null;
   token = localStorage.getItem('token');
   id = localStorage.getItem('id');
-  set_channel_sidebar();
+  setChannelSidebar();
   panel_profile.addEventListener('click', (e) => {
-      toggleUserDetails();
+      if (channels[current_channel].flags != 0) {
+          toggleUserDetails();
+      }
   });
   popup_details_back.addEventListener('click', (e) => {
+      toggleUserDetails();
+  });
+  popup_details_dm.addEventListener('click', (e) => {
+      createDM(popup_details_id.textContent, false);
       toggleUserDetails();
   });
   add_channel.addEventListener('click', (e) => toggleAddChannel());
   popup_channel_back.addEventListener('click', (e) => toggleAddChannel());
   popup_channel_submit.addEventListener('click', (e) => {
-      create_dm(parseInt(popup_channel_input.value));
+      createDM(popup_channel_input.value);
   });
   send_button.addEventListener('click', (e) => {
-      send_chat_message(send_box.value);
+      sendChatMessage(send_box.value);
       send_box.value = "";
   });
   send_box.addEventListener('keydown', (e) => {
       if (e.key == "Enter") {
           e.preventDefault();
-          send_chat_message(send_box.value);
+          sendChatMessage(send_box.value);
           send_box.value = "";
       }
   });
   function toggleUserDetails() {
-      if (channels[current_channel].flags != 0) {
-          document.getElementById('container').classList.toggle('disable');
-          document.getElementById('popup-user-detail').classList.toggle('hide');
-      }
+      document.getElementById('container').classList.toggle('disable');
+      document.getElementById('popup-user-detail').classList.toggle('hide');
   }
-  function set_channel(channel_index) {
+  function setChannel(channel_index) {
       current_channel = channel_index;
-      set_channel_data();
-      get_chat();
+      setChannelData();
+      getChat();
   }
-  function set_channel_sidebar() {
+  function setChannelSidebar() {
       channel_list.innerHTML = "";
       fetch("/api/channels?" + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           channels = [];
@@ -85,7 +90,7 @@
               channel_div.dataset.id = element.id.toString();
               channel_div.addEventListener('mouseover', (e) => showBorder(channel_div));
               channel_div.addEventListener('mouseout', (e) => hideBorder(channel_div));
-              channel_div.addEventListener('click', (e) => set_channel(parseInt(channel_div.id)));
+              channel_div.addEventListener('click', (e) => setChannel(parseInt(channel_div.id)));
               if ((element.flags & 1) == 1) {
                   fetch(`/api/channels/${element.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
                       channel_members = [];
@@ -115,11 +120,11 @@
               idx++;
           });
           current_channel = 0;
-          set_channel_data();
-          get_chat();
+          setChannelData();
+          getChat();
       });
   }
-  function set_channel_data() {
+  function setChannelData() {
       let channel = channels[current_channel];
       fetch(`/api/channels/${channel.id}/users?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           channel_members = [];
@@ -142,7 +147,7 @@
           }
       });
   }
-  function get_chat() {
+  function getChat() {
       let channel = channels[current_channel];
       main_panel_messages.innerHTML = "";
       fetch(`/api/channels/${channel.id}/messages?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
@@ -152,12 +157,12 @@
               let sender_avatar = element.author.avatarurl;
               let message_id = element.id;
               let message_content = element.messages[0].content;
-              add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content);
+              addChatMessage(sender_name, sender_id, sender_avatar, message_id, message_content);
           });
           lastmsgid = data.lastmessageid;
       });
   }
-  function show_user_details(id) {
+  function showUserDetails(id) {
       fetch(`/api/users/${id}?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           popup_details_id.textContent = data.id;
           popup_details_name.textContent = data.username;
@@ -172,36 +177,37 @@
           toggleUserDetails();
       });
   }
-  function create_dm(id) {
+  function createDM(id, doToggle = true) {
       fetch(`/api/users/${id}/DM?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           let channel_id = parseInt(data.id);
           let channel_name = data.channel_name;
           let flags = parseInt(data.flags);
           let channel = new Channel(channel_id.toString(), channel_name, flags);
           channels.push(channel);
-          set_channel_sidebar();
-          toggleAddChannel();
-      }, create_dm_error);
+          setChannelSidebar();
+          if (doToggle)
+              toggleAddChannel();
+      }, createDMError);
   }
-  function create_dm_error() {
+  function createDMError() {
       popup_channel_input.classList.add("redBorders");
       popup_channel_input.value = "";
       popup_channel_input.placeholder = "Invalid User ID";
-      popup_channel_input.addEventListener('click', create_dm_error_end);
+      popup_channel_input.addEventListener('click', createDMErrorEnd);
   }
-  function create_dm_error_end() {
+  function createDMErrorEnd() {
       popup_channel_input.classList.remove("redBorders");
       popup_channel_input.placeholder = "User ID";
-      popup_channel_input.removeEventListener('click', create_dm_error_end);
+      popup_channel_input.removeEventListener('click', createDMErrorEnd);
   }
-  function add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content, scroll = false) {
+  function addChatMessage(sender_name, sender_id, sender_avatar, message_id, message_content, scroll = false) {
       let div = document.createElement('div');
       let metadata = document.createElement('metadata');
       let user = document.createElement('user');
-      metadata.addEventListener('click', (e) => show_user_details(sender_id));
+      metadata.addEventListener('click', (e) => showUserDetails(sender_id));
       user.textContent = sender_name;
       let timestamp = document.createElement('timestamp');
-      let utc = snowflake_to_timestamp(BigInt(message_id));
+      let utc = snowflakeToTimestamp(BigInt(message_id));
       timestamp.textContent = new Date(utc * 1000).toString();
       metadata.appendChild(user);
       metadata.appendChild(timestamp);
@@ -221,13 +227,13 @@
           main_panel_messages.scrollTop = main_panel_messages.scrollHeight;
       }
   }
-  function send_chat_message(content) {
+  function sendChatMessage(content) {
       let body = { message: content };
       fetch(`/api/channels/${channels[current_channel].id}/messages?` + new URLSearchParams({ token: token.toString() }), {
           method: "POST",
           body: JSON.stringify(body),
           headers: { 'Content-Type': 'application/json' },
-      }).then(e => update_chat(true));
+      }).then(e => updateChat(true));
   }
   function showBorder(element) {
       element.classList.add('border');
@@ -235,7 +241,7 @@
   function hideBorder(element) {
       element.classList.remove('border');
   }
-  function snowflake_to_timestamp(_id) {
+  function snowflakeToTimestamp(_id) {
       _id = _id >> BigInt(22);
       _id += BigInt(1142974214000);
       _id = _id / BigInt(1000);
@@ -245,7 +251,7 @@
       document.getElementById('container').classList.toggle('disable');
       document.getElementById('popup-add-channel').classList.toggle('hide');
   }
-  function update_chat(scroll = false) {
+  function updateChat(scroll = false) {
       fetch(`/api/channels/${channels[current_channel].id}/messages?after=${lastmsgid}&` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
           data.messages.forEach((element) => {
               let sender_name = element.author.name;
@@ -253,13 +259,13 @@
               let sender_avatar = element.author.avatarurl;
               let message_id = element.id;
               let message_content = element.messages[0].content;
-              add_chat_message(sender_name, sender_id, sender_avatar, message_id, message_content, scroll);
+              addChatMessage(sender_name, sender_id, sender_avatar, message_id, message_content, scroll);
           });
           if (data.lastmessageid != -1) {
               lastmsgid = data.lastmessageid;
           }
       });
   }
-  let update_interval = setInterval(update_chat, 3000);
+  let update_interval = setInterval(updateChat, 3000);
 
 }());

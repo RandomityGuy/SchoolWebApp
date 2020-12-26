@@ -168,6 +168,8 @@ class Channel(ToDictable):
         Returns:
             int: The DM channel id
         """
+        if (userone == usertwo):
+            raise Exception("You cannot have DMs with yourself");
         dm = Channel.DM_exists(userone, usertwo)
         if dm != None:
             return dm

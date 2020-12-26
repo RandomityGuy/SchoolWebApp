@@ -2,6 +2,7 @@ const popup_details_name = document.querySelector("#popup-user-detail-name") as 
 const popup_details_class = document.querySelector("#popup-user-detail-class") as HTMLDivElement;
 const popup_details_id = document.querySelector("#popup-user-detail-id") as HTMLDivElement;
 const popup_details_avatar = document.querySelector("#popup-user-detail-avatar") as HTMLDivElement;
+const popup_details_dm = document.querySelector("#popup-user-detail-add") as HTMLDivElement;
 const channel_header = document.querySelector("#main-panel-profile-name") as HTMLDivElement;
 const panel_profile = document.querySelector("#main-panel-profile") as HTMLDivElement;
 const popup_details_back = document.querySelector("#popup-user-detail-back") as HTMLButtonElement;
@@ -51,10 +52,17 @@ id = localStorage.getItem('id');
 setChannelSidebar();
 
 panel_profile.addEventListener('click', (e) => {
-    toggleUserDetails();
+    if (channels[current_channel].flags != 0) {
+        toggleUserDetails();
+    }
 });
 
 popup_details_back.addEventListener('click', (e) => {
+    toggleUserDetails();
+});
+
+popup_details_dm.addEventListener('click', (e) => {
+    createDM(popup_details_id.textContent, false);
     toggleUserDetails();
 });
 
@@ -63,7 +71,7 @@ add_channel.addEventListener('click', (e) => toggleAddChannel());
 popup_channel_back.addEventListener('click', (e) => toggleAddChannel());
 
 popup_channel_submit.addEventListener('click', (e) => {
-    createDM(parseInt(popup_channel_input.value));
+    createDM(popup_channel_input.value);
 });
 
 send_button.addEventListener('click', (e) => {
@@ -80,10 +88,8 @@ send_box.addEventListener('keydown', (e) => {
 })
 
 function toggleUserDetails() {
-    if (channels[current_channel].flags != 0) {
-        document.getElementById('container').classList.toggle('disable');
-        document.getElementById('popup-user-detail').classList.toggle('hide');
-    }
+    document.getElementById('container').classList.toggle('disable');
+    document.getElementById('popup-user-detail').classList.toggle('hide');
 }
 
 function setChannel(channel_index: number) {
@@ -185,7 +191,7 @@ function getChat() {
     });
 }
 
-function show_user_details(id: string) {
+function showUserDetails(id: string) {
     fetch(`/api/users/${id}?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
         popup_details_id.textContent = data.id;
         popup_details_name.textContent = data.username;
@@ -200,7 +206,7 @@ function show_user_details(id: string) {
     });
 }
 
-function createDM(id: number) {
+function createDM(id: string, doToggle: boolean = true) {
     fetch(`/api/users/${id}/DM?` + new URLSearchParams({ token: token.toString() })).then(response => response.json()).then(data => {
         let channel_id = parseInt(data.id);
         let channel_name = data.channel_name;
@@ -210,7 +216,7 @@ function createDM(id: number) {
         channels.push(channel);
 
         setChannelSidebar();
-        toggleAddChannel();
+        if (doToggle) toggleAddChannel();
     }, createDMError);
 }
 
@@ -232,7 +238,7 @@ function addChatMessage(sender_name: string, sender_id: string, sender_avatar: s
     let div = document.createElement('div');
     let metadata = document.createElement('metadata');
     let user = document.createElement('user');
-    metadata.addEventListener('click', (e) => show_user_details(sender_id));
+    metadata.addEventListener('click', (e) => showUserDetails(sender_id));
     user.textContent = sender_name;
     let timestamp = document.createElement('timestamp');
     let utc = snowflakeToTimestamp(BigInt(message_id));

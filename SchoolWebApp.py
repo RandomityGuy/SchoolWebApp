@@ -17,30 +17,42 @@ app = Flask(__name__, template_folder="ui")
 
 @app.route('/js/<path:path>')
 def send_js(path):
-    return send_from_directory('ui/js', path)
+    resp = send_from_directory('ui/js', path)
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
 
 @app.route('/css/<path:path>')
 def send_css(path):
-    return send_from_directory('ui/css', path)
+    resp = send_from_directory('ui/css', path)
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
 
 @app.route('/assets/<path:path>')
 def send_assets(path):
-    return send_from_directory('ui/assets', path)
+    resp = send_from_directory('ui/assets', path)
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
 
 ## FRONTEND
 
 @app.route('/')
 def index():
-    return render_template("index.html");
+    resp = Response(render_template("index.html"));
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
 
 @app.route('/home')
 def home():
-    return render_template("html/home.html");
+    resp = Response(render_template("html/home.html"));
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
 
 
 @app.route('/chat')
 def chatpage():
-    return render_template("html/chat.html");
+    resp = Response(render_template("html/chat.html"));
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
 
 
 ## API

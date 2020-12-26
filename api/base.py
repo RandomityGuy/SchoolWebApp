@@ -33,3 +33,15 @@ def reset_cursor():
 class ToDictable:
     def toDict(self):
         return {}
+
+class DBConnection:
+    def __init__(self):
+        self.conn = connect();
+        self.cursor = self.conn.cursor();
+
+    def __enter__(self):
+        return (self.cursor, self.conn);
+
+    def __exit__(self, type, value, traceback):
+        self.cursor.close();
+        self.conn.close();

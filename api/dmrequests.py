@@ -34,10 +34,11 @@ class DMRequest(ToDictable):
         Returns:
             bool: True if DM exists and it isnt expired.
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
-        if global_cursor.rowcount == 0:
-            return False
-        return True
+        with DBConnection() as (cursor, conn):
+            cursor.execute("SELECT * FROM dmrequests WHERE to = %s && by = %s && expires > CURDATE();", (to_user, by_user))
+            if cursor.rowcount == 0:
+                return False
+            return True
 
     @staticmethod
     def request_dm(to_user: int, by_user: int, content: str) -> int:
@@ -51,10 +52,11 @@ class DMRequest(ToDictable):
         Returns:
             int: The DM request id
         """
-        id = snowflakegen.__next__()
-        global_cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
-        db.commit()
-        return id
+        with DBConnection() as (cursor, conn):
+            id = snowflakegen.__next__()
+            cursor.execute("INSERT INTO dmrequests VALUES(%s,%s,%s,%s,DATE_ADD(CURDATE(), INTERVAL %s DAY));", (id, to_user, by_user, content, DMRequest.MAX_EXPIRE_DAYS))
+            conn.commit()
+            return id
 
     @staticmethod
     def get_sent_dm_requests(for_user: int) -> list[DMRequest]:
@@ -66,11 +68,12 @@ class DMRequest(ToDictable):
         Returns:
             list[DMRequest]: The list of DM requests
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE (by = %s && expires > CURDATE());", (for_user,))
-        L = []
-        for (id, to, by, content, expires) in global_cursor:
-            L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
-        return L
+        with DBConnection() as (cursor, conn):
+            cursor.execute("SELECT * FROM dmrequests WHERE (by = %s && expires > CURDATE());", (for_user,))
+            L = []
+            for (id, to, by, content, expires) in cursor:
+                L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
+            return L
 
     @staticmethod
     def get_dm_requests(for_user: int) -> list[DMRequest]:
@@ -82,11 +85,12 @@ class DMRequest(ToDictable):
         Returns:
             list[DMRequest]: The list of DM requests
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE (to = %s && expires > CURDATE());", (for_user,))
-        L = []
-        for (id, to, by, content, expires) in global_cursor:
-            L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
-        return L
+        with DBConnection() as (cursor, conn):
+            cursor.execute("SELECT * FROM dmrequests WHERE (to = %s && expires > CURDATE());", (for_user,))
+            L = []
+            for (id, to, by, content, expires) in cursor:
+                L.append(DMRequest(id, to, by, content, date.fromisoformat(expires)))
+            return L
 
     @staticmethod
     def get_dm_request(id: int) -> DMRequest:
@@ -98,11 +102,12 @@ class DMRequest(ToDictable):
         Returns:
             DMRequest: The DM request
         """
-        global_cursor.execute("SELECT * FROM dmrequests WHERE (id = %s && expires > CURDATE());", (id,))
-        if global_cursor.rowcount == 0:
-            return None
-        res = global_cursor.fetchone()
-        return DMRequest(res[0], res[1], res[2], res[3], date.fromisoformat(res[4]))
+        with DBConnection() as (cursor, conn):
+            cursor.execute("SELECT * FROM dmrequests WHERE (id = %s && expires > CURDATE());", (id,))
+            if cursor.rowcount == 0:
+                return None
+            res = cursor.fetchone()
+            return DMRequest(res[0], res[1], res[2], res[3], date.fromisoformat(res[4]))
 
     @staticmethod
     def accept_dm(id: int) -> int:
@@ -114,10 +119,11 @@ class DMRequest(ToDictable):
         Returns:
             int: The DM channel id
         """
-        req = DMRequest.get_dm_request(id)
-        if req == None:
-            return None
-        return Channel.create_DM(req.by_user, req.to_user)
+        with DBConnection() as (cursor, conn):
+            req = DMRequest.get_dm_request(id)
+            if req == None:
+                return None
+            return Channel.create_DM(req.by_user, req.to_user)
 
     @staticmethod
     def reject_dm(id: int):
@@ -126,5 +132,6 @@ class DMRequest(ToDictable):
         Args:
             id (int): The DM request id
         """
-        global_cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
-        db.commit()
+        with DBConnection() as (cursor, conn):
+            cursor.execute("DELETE FROM dmrequests WHERE id = %s;", (id,))
+            conn.commit()

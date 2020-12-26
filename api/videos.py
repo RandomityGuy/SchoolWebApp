@@ -30,9 +30,10 @@ class Videos:
             studentclass (str): The class that can view the video
             path (str): The path where the video is to be stored
         """
-        id = snowflakegen.__next__()
-        global_cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
-        db.commit()
+        with DBConnection() as (cursor, conn):
+            id = snowflakegen.__next__()
+            cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
+            conn.commit()
 
     @staticmethod
     def get_all_videos_for_class(studentclass: str) -> list[Video]:
@@ -44,12 +45,13 @@ class Videos:
         Returns:
             list[Video]: The list of videos
         """
-        global_cursor.execute("SELECT * FROM videos WHERE class=%s;", (studentclass,))
-        ret = []
-        for (id, studentclass, name, link, path) in global_cursor:
-            ret.append(Video(id, name, studentclass, link, path))
+        with DBConnection() as (cursor, conn):
+            cursor.execute("SELECT * FROM videos WHERE class=%s;", (studentclass,))
+            ret = []
+            for (id, studentclass, name, link, path) in cursor:
+                ret.append(Video(id, name, studentclass, link, path))
 
-        return ret
+            return ret
 
     @staticmethod
     def get_videos_in_folder(studentclass: str, folder: str) -> list[Video]:
@@ -62,12 +64,13 @@ class Videos:
         Returns:
             list[Video]: The list of videos
         """
-        global_cursor.execute("SELECT * FROM videos WHERE class=%s && path LIKE %s", (studentclass, folder))
-        ret = []
-        for (id, studentclass, name, link, path) in global_cursor:
-            ret.append(Video(id, name, studentclass, link, path))
+        with DBConnection() as (cursor, conn):
+            cursor.execute("SELECT * FROM videos WHERE class=%s && path LIKE %s", (studentclass, folder))
+            ret = []
+            for (id, studentclass, name, link, path) in cursor:
+                ret.append(Video(id, name, studentclass, link, path))
 
-        return ret
+            return ret
 
     @staticmethod
     def get_folders(studentclass: str, folder: str) -> list[str]:
@@ -80,12 +83,13 @@ class Videos:
         Returns:
             list[str]: The list of folder paths
         """
-        regex = f"^{folder}\/[A-z0-9]*\/{{0,1}}"
-        global_cursor.execute("SELECT DISTINCT TRIM(TRAILING '/' FROM REGEXP_SUBSTR(path,%s)) FROM videos WHERE path REGEXP %s;", (regex, regex))
-        ret = []
-        for (folder,) in global_cursor:
-            ret.append(folder)
-        return ret
+        with DBConnection() as (cursor, conn):
+            regex = f"^{folder}\/[A-z0-9]*\/{{0,1}}"
+            cursor.execute("SELECT DISTINCT TRIM(TRAILING '/' FROM REGEXP_SUBSTR(path,%s)) FROM videos WHERE path REGEXP %s;", (regex, regex))
+            ret = []
+            for (folder,) in cursor:
+                ret.append(folder)
+            return ret
 
     @staticmethod
     def delete_video(videoid: int):
@@ -94,8 +98,9 @@ class Videos:
         Args:
             videoid (int): The video id
         """
-        global_cursor.execute("DELETE FROM videos WHERE id=%s", (videoid,))
-        db.commit()
+        with DBConnection() as (cursor, conn):
+            cursor.execute("DELETE FROM videos WHERE id=%s", (videoid,))
+            conn.commit()
 
     @staticmethod
     def modify_video(id: int, name: str, link: str, studentclass: str, path: str):
@@ -108,7 +113,8 @@ class Videos:
             studentclass (str): The new description
             path (str): The new path
         """
-        Videos.delete_video(id)
-        # We'll just delete instead and add the new one cause its less lines of code
-        global_cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
-        db.commit()
+        with DBConnection() as (cursor, conn):
+            Videos.delete_video(id)
+            # We'll just delete instead and add the new one cause its less lines of code
+            cursor.execute("INSERT INTO videos VALUES(%s,%s,%s,%s,%s);", (id, studentclass, name, link, path))
+            conn.commit()

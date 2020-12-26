@@ -361,5 +361,18 @@ timestamp {
 }
 
 .redBorders {
-    border-bottom: 1px solid red !important;
+  border-bottom: 1px solid red !important;
+}
+
+#popup-user-detail-add {
+  position: relative;
+  top: -90%;
+  color: white;
+  left: 70%;
+  width: 5%;
+  height: 5%;
+}
+#popup-user-detail-add:hover {
+  color: var(--accent);
+  cursor: pointer;
 }

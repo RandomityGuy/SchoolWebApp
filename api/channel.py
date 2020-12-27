@@ -161,6 +161,8 @@ class Channel(ToDictable):
         Returns:
             int: The DM channel id
         """
+        if (userone == usertwo):
+            raise Exception("Cannot have DM with self");
         with DBConnection() as (cursor, conn):
             dm = Channel.DM_exists(userone, usertwo)
             if dm != None:

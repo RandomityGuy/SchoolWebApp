@@ -13,6 +13,18 @@ body {
   font-family: 'Montserrat', sans-serif;
 }
 
+.close-1 {
+  position: absolute;
+  left: 103%;
+  /* margin-top: 0%; */
+  vertical-align: middle;
+  font-size: 2rem;
+  color: white;
+  background-color: red;
+  padding: 10px 20px;
+  border-radius: 50%;
+}
+
 #title {
   color: white;
   font-size: 2.5rem;
@@ -142,12 +154,12 @@ body {
 }
 #announcements {
   position: absolute;
-  background-color: var(--fore);
+  background-color: var(--back);
   color: white;
   top: 30%;
   left: 5%;
   width: 90%;
-  height: 80%;
+  height: 100%;
 }
 
 .a {

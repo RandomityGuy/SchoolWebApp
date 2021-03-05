@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  --fore: #0a0a0a;
+  --back: #020202;
+  --accent: #79d2f1;
+  background-color: var(--back);
+  font-family: 'Montserrat', sans-serif;
+}
+
+#title {
+  position: absolute;
+  font-size: 2rem;
+  color: white;
+  left: 43%;
+}
+
+#wrapper {
+  position: absolute;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  width: 90%;
+  height: 100%;
+  left: 5%;
+  top: 15%;
+  grid-column-gap: 3rem;
+  grid-row-gap: 3rem;
+}
+.assignment {
+  background-color: var(--fore);
+  width: 100%;
+  height: 100%;
+  color: white;
+  text-align: center;
+  justify-items: center;
+  padding: 1rem;
+  position: relative;
+}
+
+.assignment subject {
+  font-size: 2rem;
+  color: orangered;
+  position: relative;
+  top: 5%;
+}
+
+.assignment desc {
+  font-size: 1rem;
+  color: white;
+  position: relative;
+  top: 5%;
+}
+.assignment status {
+  font-size: 1rem;
+  text-align: center;
+  color: orangered;
+  position: absolute;
+  bottom: 5%;
+  left: 30%;
+}

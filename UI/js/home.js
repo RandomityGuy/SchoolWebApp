@@ -7,6 +7,7 @@
     const user_details_avatar = document.querySelector("#user-details-avatar");
     const logout_button = document.querySelector("#logout");
     const chat_button = document.querySelector('#chat-button');
+    const announcements_button = document.querySelector("#announcements-button");
     window.addEventListener('load', (e) => {
         populateUserDetails();
     });
@@ -17,6 +18,9 @@
     });
     chat_button.addEventListener('click', (e) => {
         window.location.href = 'chat';
+    });
+    announcements_button.addEventListener('click', (e) => {
+        window.location.href = 'announcements';
     });
     function populateUserDetails() {
         let tok = localStorage.getItem('token');

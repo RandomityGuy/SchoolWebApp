@@ -1,3 +1,4 @@
+from flask.helpers import send_file
 from magic.magic import from_file
 from api.user import User
 from api.permissions import Permissions
@@ -33,6 +34,7 @@ def send_assets(path):
     resp.headers["Cache-Control"] = "no-store";
     return resp;
 
+
 ## FRONTEND
 
 @app.route('/')
@@ -53,6 +55,13 @@ def chatpage():
     resp = Response(render_template("html/chat.html"));
     resp.headers["Cache-Control"] = "no-store";
     return resp;
+
+@app.route('/announcements')
+def announcements_frontend():
+    resp = Response(render_template("html/announce.html"));
+    resp.headers["Cache-Control"] = "no-store";
+    return resp;
+    
 
 
 ## API

@@ -4,6 +4,7 @@ const user_details_id = document.querySelector("#user-details-id-div") as HTMLDi
 const user_details_avatar = document.querySelector("#user-details-avatar") as HTMLDivElement;
 const logout_button = document.querySelector("#logout") as HTMLButtonElement;
 const chat_button = document.querySelector('#chat-button') as HTMLButtonElement;
+const announcements_button = document.querySelector("#announcements-button") as HTMLDivElement;
 
 window.addEventListener('load', (e) => {
     populateUserDetails();
@@ -17,6 +18,10 @@ logout_button.addEventListener('click', (e) => {
 
 chat_button.addEventListener('click', (e) => {
     window.location.href = 'chat';
+})
+
+announcements_button.addEventListener('click', (e) => {
+    window.location.href = 'announcements';
 })
 
 function populateUserDetails() {

@@ -7,29 +7,30 @@
     <link rel="stylesheet" href="../css/announce.css" />
   </head>
   <body>
-    <div id="title">Announcements</div>
-    <div id="class-selector">
-      <div id="class-selector-select">
-        <form action="">
-          <label for="class-selector-select-class">Class</label>
-          <select
-            name="class-selector-select-class"
-            id="class-selector-select-class"
-          >
-            <option value="1">I</option>
-            <option value="2">II</option>
-            <option value="3">III</option>
-            <option value="4">IV</option>
-            <option value="5">V</option>
-            <option value="6">VI</option>
-            <option value="7">VII</option>
-            <option value="8">VIII</option>
-            <option value="9">IX</option>
-            <option value="10">X</option>
-            <option value="11">XI</option>
-            <option value="12">XII</option>
-          </select>
-          <!-- <label for="class-selector-select-sec" id="no">Section</label>
+    <div id="wrapper">
+      <div id="title">Announcements</div>
+      <div id="class-selector">
+        <div id="class-selector-select">
+          <form action="">
+            <label for="class-selector-select-class">Class</label>
+            <select
+              name="class-selector-select-class"
+              id="class-selector-select-class"
+            >
+              <option value="1">I</option>
+              <option value="2">II</option>
+              <option value="3">III</option>
+              <option value="4">IV</option>
+              <option value="5">V</option>
+              <option value="6">VI</option>
+              <option value="7">VII</option>
+              <option value="8">VIII</option>
+              <option value="9">IX</option>
+              <option value="10">X</option>
+              <option value="11">XI</option>
+              <option value="12">XII</option>
+            </select>
+            <!-- <label for="class-selector-select-sec" id="no">Section</label>
           <select
             name="class-selector-select-sec"
             id="class-selector-select-sec"
@@ -43,34 +44,128 @@
             <option value="h">Humanities</option>
             <option value="i">Commerce</option>
           </select> -->
-          <button id="select-button">Show</button>
-        </form>
+            <button id="select-button">Show</button>
+          </form>
+        </div>
+      </div>
+      <div id="announcements">
+        <div id="ann-1" class="a">
+          <metadata>
+            Admin <timestamp> 15 - 01 - 2005 12 : 05 : 20</timestamp></metadata
+          >
+          <br />
+          <content>
+            Everyone, We have an announcement to make. Stop Bullying!
+          </content>
+        </div>
+        <div id="ann-2" class="a">
+          <metadata>
+            Admin <timestamp>31 - 03 - 2055 17 : 55 : 26</timestamp><br
+          /></metadata>
+          <content
+            >Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vel modi
+            nemo pariatur facere iste asperiores necessitatibus rerum minima,
+            soluta libero voluptatibus quos vero nam sit tenetur amet doloribus
+            error repudiandae. Lorem ipsum, dolor sit amet consectetur
+            adipisicing elit. Ea maxime consequuntur mollitia inventore, dolores
+            voluptatibus saepe alias corrupti autem quaerat dicta laudantium,
+            nam placeat libero porro consectetur doloribus ab quas.</content
+          >
+        </div>
+
+        <button id="create-but" onclick="Hide()">New</button>
       </div>
     </div>
-    <div id="announcements">
-      <div id="ann-1" class="a">
-        <metadata>
-          Admin <timestamp> 15 - 01 - 2005 12 : 05 : 20</timestamp></metadata
-        >
+    <div id="create" class="hide">
+      <form action="">
+        <input
+          type="textarea"
+          placeholder="Enter Announcement Here"
+          id="create-ann-input"
+        />
+
         <br />
-        <content>
-          Everyone, We have an announcement to make. Stop Bullying!
-        </content>
-      </div>
-      <div id="ann-2" class="a">
-        <metadata>
-          Admin <timestamp>31 - 03 - 2055 17 : 55 : 26</timestamp><br
-        /></metadata>
-        <content
-          >Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vel modi
-          nemo pariatur facere iste asperiores necessitatibus rerum minima,
-          soluta libero voluptatibus quos vero nam sit tenetur amet doloribus
-          error repudiandae. Lorem ipsum, dolor sit amet consectetur adipisicing
-          elit. Ea maxime consequuntur mollitia inventore, dolores voluptatibus
-          saepe alias corrupti autem quaerat dicta laudantium, nam placeat
-          libero porro consectetur doloribus ab quas.</content
-        >
-      </div>
+        <div id="create-ann-check">
+          <input type="checkbox" id="I" name="I" value="I" />
+          <label for="I">I</label><br />
+
+          <input type="checkbox" id="II" name="II" value="II" />
+          <label for="II">II</label><br />
+
+          <input type="checkbox" id="III" name="III" value="III" />
+          <label for="III">III</label><br />
+
+          <input type="checkbox" id="IV" name="IV" value="IV" />
+          <label for="IV">IV</label><br />
+
+          <input type="checkbox" id="V" name="V" value="V" />
+          <label for="V">V</label><br />
+
+          <input type="checkbox" id="VI" name="VI" value="VI" />
+          <label for="VI">VI</label><br />
+
+          <input type="checkbox" id="VII" name="VII" value="VII" />
+          <label for="VII">VII</label><br />
+
+          <input type="checkbox" id="VIII" name="VIII" value="VIII" />
+          <label for="VIII">VIII</label><br />
+
+          <input type="checkbox" id="IX" name="IX" value="IX" />
+          <label for="IX">IX</label><br />
+
+          <input type="checkbox" id="X" name="X" value="X" />
+          <label for="X">X</label><br />
+
+          <input type="checkbox" id="XIS" name="XIS" value="XIS" />
+          <label for="XIS">XI Science</label><br />
+
+          <input type="checkbox" id="XIC" name="XIC" value="XIC" />
+          <label for="XIC">XI Commerce</label><br />
+
+          <input type="checkbox" id="XIH" name="XIH" value="XIH" />
+          <label for="XIH">XI Humanities</label><br />
+
+          <input type="checkbox" id="XIIS" name="XIIS" value="XIIS" />
+          <label for="XIIS">XII Science</label><br />
+
+          <input type="checkbox" id="XIIC" name="XIIC" value="XIIC" />
+          <label for="XIIC">XII Commerce</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+
+          <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
+          <label for="XIIH">XII Humanities</label><br />
+        </div>
+        <button id="create-back" onclick="Hide()"">Back</button>
+        <button id="create-create">Create</button>
+      </form>
     </div>
+    <script src="../js/announce.js"></script>
   </body>
 </html>

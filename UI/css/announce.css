@@ -21,6 +21,108 @@ body {
   top: 3%;
 }
 
+#create-but {
+  position: absolute;
+  top: -20%;
+  left: 80%;
+  color: lightgreen;
+  border: 1px solid lightgreen;
+  background-color: var(--back);
+  padding: 0.75rem;
+  width: 10%;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+#create {
+  background-color: var(--back);
+  position: absolute;
+  height: 80%;
+  width: 70%;
+  left: 15%;
+  top: 10%;
+}
+
+#create-ann-input {
+  color: white;
+  position: relative;
+  background-color: var(--back);
+  border: 0;
+  border-bottom: 1px solid white;
+  width: 80%;
+  left: 10%;
+  margin-top: 5%;
+  padding: 1rem;
+  font-size: 1.5rem;
+  transition: 0.5s ease-in-out;
+}
+
+#create-ann-input:focus {
+  outline: 0;
+  border: 0;
+  border-bottom: 1px solid var(--accent);
+}
+
+#create-ann-check {
+  margin-top: 5%;
+  position: relative;
+  color: white;
+
+  -webkit-column-count: 6; /* Chrome, Safari, Opera */
+  -moz-column-count: 6; /* Firefox */
+  column-count: 4;
+  line-height: 3rem;
+  font-size: 1.5rem;
+  column-width: 0.1rem;
+  left: 5%;
+  width: 55rem;
+  height: 10em;
+  top: 50%;
+  overflow-y: scroll;
+  overflow-x: scroll;
+}
+#create-create {
+  position: relative;
+  width: 20%;
+  left: 40%;
+  margin-top: 3%;
+  padding: 1rem;
+  font-size: 2rem;
+  background-color: var(--back);
+  border: 1px solid lightgreen;
+  color: lightgreen;
+  transition: 0.3s ease-in-out;
+  /* border-radius: 20px; */
+}
+
+#create-create:hover,
+#create-create:focus {
+  background-color: lightgreen;
+  color: var(--back);
+  cursor: pointer;
+}
+
+#create-back {
+  position: relative;
+  width: 20%;
+  left: 20%;
+  margin-top: 3%;
+  padding: 1rem;
+  font-size: 2rem;
+  background-color: var(--back);
+  border: 1px solid red;
+  color: red;
+  transition: 0.3s ease-in-out;
+  /* border-radius: 20px; */
+}
+
+#create-back:hover,
+#create-back:focus {
+  background-color: red;
+  color: var(--back);
+  cursor: pointer;
+}
+
 #class-selector {
   color: white;
   position: absolute;
@@ -78,4 +180,14 @@ content {
   text-align: center;
   font-weight: 200;
   line-height: 2.2rem;
+}
+
+#wrapper {
+  transition: 0.3s ease-in-out;
+  opacity: 1;
+}
+
+.hide {
+  opacity: 0;
+  pointer-events: none;
 }

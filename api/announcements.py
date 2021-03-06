@@ -69,11 +69,11 @@ class Announcements:
             list[Announcement]: The list of announcements
         """
         with DBConnection() as (cursor, conn):
-            cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE chatusers.class = a.class && chatusers.id = %s;", (user,))
+            cursor.execute("SELECT a.id,c.username,a.class,a.content FROM announcements as a,chatusers as b,chatusers as c WHERE b.class = a.class && b.id = %s && c.id=a.byuser;", (user,))
             res = cursor.fetchall()
             L = []
             for result in res:
-                L.append(Announcement(str(result['a.id']), result['a.byuser'], result['a.class'], result['a.content']))
+                L.append(Announcement(str(result['id']), result['username'], result['class'], result['content']))
 
             conn.commit();
             return L

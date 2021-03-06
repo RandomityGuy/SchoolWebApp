@@ -348,12 +348,8 @@ def announcements():
                 return jsonify(L);
             else:
                 return abort(403);
-        anns = api.Announcements.get_announcements_by_user(userid)
-        L = []
-        for a in anns:
-            L.append(a.toDict())
-
-        return jsonify(L)
+        L = QueryList(api.Announcements.get_announcements_by_user(userid)).Select(lambda x: x.ToDict()).ToList();
+        return jsonify(L);
 
     if request.method == "POST":
         token = request.args.get("token")

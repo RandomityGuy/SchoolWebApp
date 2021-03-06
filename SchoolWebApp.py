@@ -337,10 +337,17 @@ def authtoken():
 
 ### ANNOUNCEMENTS
 
-@app.route("/api/announcements", methods=["GET", "POST"])
+@app.route("/api/announcements", methods=["GET", "POST", "DELETE"])
 def announcements():
     if request.method == "GET":
         userid = authenticate_user()
+        if (api.Permissions.has_permission(api.Auth.get_permissions(userid), api.Permissions.MANAGE_ANNOUNCE)):
+            studentclass = request.args.get("class", None);
+            if (studentclass != None):
+                L = QueryList(api.Announcements.get_announcements_by_class(studentclass)).Select(lambda x: x.ToDict()).ToList();
+                return jsonify(L);
+            else:
+                return abort(403);
         anns = api.Announcements.get_announcements_by_user(userid)
         L = []
         for a in anns:
@@ -349,9 +356,24 @@ def announcements():
         return jsonify(L)
 
     if request.method == "POST":
-        token = request.form.get("token")
+        token = request.args.get("token")
         toclass = request.json.get("class")
         content = request.json.get("content")
+        if not api.Auth.authorize(token):
+            return abort(403)
+        perms = api.Auth.get_token_permissions(token)
+        if api.Permissions.has_permission(perms, api.Permissions.MANAGE_ANNOUNCE):
+            user = api.Auth.get_token_user_id(token)
+            if user != None:
+                api.Announcements.make_announcement(user, toclass, content)
+                return "OK"
+            else:
+                return abort(403)
+        return abort(403)
+
+    if request.method == "DELETE":
+        token = request.args.get("token")
+        id = request.json.get("id")
 
         if not api.Auth.authorize(token):
             return abort(403)
@@ -360,7 +382,7 @@ def announcements():
         if api.Permissions.has_permission(perms, api.Permissions.MANAGE_ANNOUNCE):
             user = api.Auth.get_token_user_id(token)
             if user != None:
-                api.Announcements.make_announcement(user, toclass, content)
+                api.Announcements.revoke_announcement(user, id)
                 return "OK"
             else:
                 return abort(403)
@@ -492,7 +514,7 @@ def assignmentinfomark(assignmentid, submissionid):
 ### CLASSES
 
 @app.route("/api/classes", methods=["GET"])
-def getclasses(classname):
+def getclasses():
     userid = authenticate_user()
     return jsonify(api.StudentClass.get_classes())
 

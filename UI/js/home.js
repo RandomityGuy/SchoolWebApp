@@ -30,6 +30,7 @@
             user_details_name.textContent = data.username;
             user_details_avatar.style.backgroundImage = "url(" + data["avatar-url"] + ")";
             localStorage.setItem('id', data.id.toString());
+            localStorage.setItem('permissions', data.permissions.toString());
             let perms = data.permissions;
             if (perms == 511) {
                 user_details_class.textContent = "PRINCIPAL | Staff";

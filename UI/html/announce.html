@@ -9,9 +9,10 @@
   <body>
     <div id="wrapper">
       <div id="title">Announcements</div>
+      <div id="home"><a href="home">H</a></div>
       <div id="class-selector">
         <div id="class-selector-select">
-          <form action="">
+          <form action="" hidden=true id="class-selector-form">
             <label for="class-selector-select-class">Class</label>
             <select
               name="class-selector-select-class"
@@ -30,21 +31,6 @@
               <option value="11">XI</option>
               <option value="12">XII</option>
             </select>
-            <!-- <label for="class-selector-select-sec" id="no">Section</label>
-          <select
-            name="class-selector-select-sec"
-            id="class-selector-select-sec"
-          >
-            <option value="a">A</option>
-            <option value="b">B</option>
-            <option value="c">C</option>
-            <option value="d">D</option>
-            <option value="e">E</option>
-            <option value="f">F</option>
-            <option value="h">Humanities</option>
-            <option value="i">Commerce</option>
-          </select> -->
-            <button id="select-button">Show</button>
           </form>
         </div>
       </div>
@@ -135,8 +121,6 @@
           <close class="close-1">X</close>
           
         </div>
-
-        <button id="create-but" onclick="Hide()">New</button>
       </div>
     </div>
     <div id="create" class="hide">
@@ -224,7 +208,7 @@
           <input type="checkbox" id="XIIH" name="XIIH" value="XIIH" />
           <label for="XIIH">XII Humanities</label><br />
         </div>
-        <button id="create-back" onclick="Hide()"">Back</button>
+        <button id="create-back" onclick="toggleChat();">Back</button>
         <button id="create-create">Create</button>
       </form>
     </div>

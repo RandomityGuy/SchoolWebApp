@@ -16,7 +16,7 @@ class Announcement(ToDictable):
 
 class Announcements:
     @staticmethod
-    def make_announcement(user: int, destclass: str, text: str) -> int:
+    def make_announcement(user: str, destclass: str, text: str) -> int:
         """Creates an announcement for the specified class
 
         Args:
@@ -38,7 +38,7 @@ class Announcements:
                 return False
 
     @staticmethod
-    def revoke_announcement(user: int, announcementid: int) -> bool:
+    def revoke_announcement(user: str, announcementid: str) -> bool:
         """Delete an announcement specified by its id
 
         Args:
@@ -51,7 +51,7 @@ class Announcements:
         with DBConnection() as (cursor, conn):
             perms = Auth.get_permissions(user)
             if Permissions.has_permission(perms, Permissions.MANAGE_ANNOUNCE):
-                id = snowflakegen.__next__()
+                print(announcementid);
                 cursor.execute("DELETE FROM announcements WHERE id = %s;", (announcementid,))
                 conn.commit()
                 return True
@@ -73,7 +73,7 @@ class Announcements:
             res = cursor.fetchall()
             L = []
             for result in res:
-                L.append(Announcement(result['a.id'], result['a.byuser'], result['a.class'], result['a.content']))
+                L.append(Announcement(str(result['a.id']), result['a.byuser'], result['a.class'], result['a.content']))
 
             conn.commit();
             return L
@@ -89,11 +89,10 @@ class Announcements:
             list[Announcement]: The list of announcements
         """
         with DBConnection() as (cursor, conn):
-            res = cursor.execute("SELECT a.id,a.byuser,a.class,a.content FROM announcements as a,chatusers WHERE a.class = %s;", (userclass,))
-
+            cursor.execute("SELECT DISTINCT a.id,b.username,a.class,a.content FROM announcements as a,chatusers as b WHERE a.class = %s && a.byuser = b.id;", (userclass,))
             L = []
-            for result in res:
-                L.append(Announcement(result['a.id'], result['a.byuser'], result['a.class'], result['a.content']));
+            for result in cursor.fetchall():
+                L.append(Announcement(str(result['id']), result['username'], result['class'], result['content']));
 
             conn.commit();
             return L

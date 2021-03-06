@@ -80,6 +80,6 @@ class StudentClass:
         with DBConnection() as (cursor, conn):
             cursor.execute("SELECT DISTINCT class FROM chatusers")
             L = []
-            for (res,) in cursor:
-                L.append(res)
+            for res in cursor.fetchall():
+                L.append(res['class'])
             return L
